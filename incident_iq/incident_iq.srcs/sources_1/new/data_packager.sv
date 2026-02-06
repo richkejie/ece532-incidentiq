@@ -15,7 +15,7 @@ module data_packager(
     
     // interface to BRAM buffer
     output  logic [63:0]    o_packaged_word,    // packaged data
-    output  logic           o_we,               // write enable
+    output  logic           o_valid,            // data valid
     output  logic [9:0]     o_addr              // address of BRAM
     );
     
@@ -36,16 +36,16 @@ module data_packager(
         if (!arst_n) begin
             rolling_ts          <= '0;
             o_addr              <= '0;
-            o_we                <= 1'b0;
+            o_valid             <= 1'b0;
             o_packaged_word     <= '0;
         end else begin
             if (poll_trigger) begin
                 o_packaged_word <= current_frame;
-                o_we            <= 1'b1;
+                o_valid         <= 1'b1;
                 o_addr          <= o_addr + 1'b1;
-                rolling_ts      <= rolling_ts + 1'b1;
+                rolling_ts      <= rolling_ts + 1'b1; // should saturate this...
             end else begin
-                o_we            <= 1'b0;
+                o_valid         <= 1'b0;
             end
         end
     end
