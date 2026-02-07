@@ -66,6 +66,7 @@ always @(posedge i2c_clk or posedge reset) begin
                     sda_output_en <= 1;
                     sda_out <= 1;
                 end
+            end
             START: begin //start condition is SDA goes low while SCL is high
                 sda_out <= 0;
                 data_addr_reg <= { slave_addr, rw }; // load slave address and R/W bit into shift register
