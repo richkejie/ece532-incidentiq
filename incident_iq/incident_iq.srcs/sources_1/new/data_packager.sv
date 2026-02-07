@@ -2,7 +2,7 @@
 
 module data_packager(
     input   logic           clk,
-    input   logic           arst_n,             // async active low reset
+    input   logic           rst,             // sync active high reset
     
     // control from polling module
     input   logic           poll_trigger,
@@ -32,8 +32,8 @@ module data_packager(
         };
     end
     
-    always_ff @(posedge clk or negedge arst_n) begin
-        if (!arst_n) begin
+    always_ff @(posedge clk) begin
+        if (rst) begin
             rolling_ts          <= '0;
             o_addr              <= '0;
             o_valid             <= 1'b0;
