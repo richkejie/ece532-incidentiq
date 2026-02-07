@@ -5,7 +5,7 @@
 // 
 // Create Date: 02/06/2026 01:44:22 PM
 // Design Name: 
-// Module Name: gps_decode
+// Module Name: construct_gps_nmea_sentence
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -49,7 +49,7 @@ module construct_gps_nmea_sentence #(
     logic overflow;
     logic prev_was_cr = 1'b0; // boolean to see if the previous byte was the ASCII <CR> control code
     
-    integer i;
+    integer i = '0;
 
     always_ff @(posedge clk) begin
         if (rst) begin
@@ -62,6 +62,12 @@ module construct_gps_nmea_sentence #(
             out_len <= '0;
             overflow <= 1'b0;
             prev_was_cr <= 1'b0;
+            
+            for (int i = 0; i < MAX_BYTES; i++) begin
+                buf0[i] = 8'd0;
+                buf1[i] = 8'd0;
+            end
+            
         end else begin
             if (rx_valid) begin // valid UART byte received 
                 if (!in_sentence) begin // not in the middle of a sentence, so look for start character '$'
@@ -130,9 +136,9 @@ module construct_gps_nmea_sentence #(
                                 end
                             end
                             out_len <= wr_idx;
-
-                            buf_sel <= ~buf_sel; // switch other buffer to active
                         end
+                        
+                        buf_sel <= ~buf_sel; // switch other buffer to active
 
                         // reset values for next sentence
                         wr_idx <= '0;
@@ -140,6 +146,16 @@ module construct_gps_nmea_sentence #(
                         is_rmc <= 1'b0;
                         overflow <= 1'b0;
                         prev_was_cr <= 1'b0;
+                        
+                        if (buf_sel == 1'b0) begin
+                            for (int i = 0; i < MAX_BYTES; i++) begin
+                                buf0[i] = 8'd0;
+                            end
+                        end else begin
+                            for (int i = 0; i < MAX_BYTES; i++) begin
+                                buf1[i] = 8'd0;
+                            end
+                        end
                     end
                 end
             end
