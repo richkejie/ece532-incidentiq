@@ -10,7 +10,7 @@ module top(
     // --- internal wires ---
     
     // --- system top wrapper ---
-    system_top_wrapper u_system_bd(
+    system_top_wrapper u_system_top(
         
     );
     
