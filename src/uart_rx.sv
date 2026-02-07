@@ -1,20 +1,19 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: Darrian Shue
 // 
 // Create Date: 02/05/2026 09:49:47 PM
 // Design Name: 
 // Module Name: uart_rx
-// Project Name: 
+// Project Name: IncidentIQ
 // Target Devices: 
 // Tool Versions: 
-// Description: 
+// Description: UART RX module
 // 
 // Dependencies: 
 // 
-// Revision:
-// Revision 0.01 - File Created
+// Revision: 1.0
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
@@ -93,8 +92,8 @@ module uart_rx #(
                             state <= S_STOP;
                         end else begin
                             bit_idx <= bit_idx + 1;
-                            baud_cnt <= BAUD_DIV - 1; // set counter to sample in the middle of the next bit
                         end
+                        baud_cnt <= BAUD_DIV - 1; // set counter to sample in the middle of the next bit
                     end
                 end
                 S_STOP: begin
