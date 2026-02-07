@@ -2,7 +2,7 @@
 
 module top(
     input   logic           CLK,        // board clock crystal (100 MHZ?)
-    input   logic           ARESET_N    // reset button (async active low)
+    input   logic           RESET       // reset button (sync active high)
     
     // outputs?
     );
@@ -10,14 +10,19 @@ module top(
     // --- internal wires ---
     
     // --- system top wrapper ---
-    system_top_wrapper u_system_bd(
+    system_top_wrapper u_system_top(
         
     );
     
+    // -- crash detection ---
+    crash_detection u_crash_detection(
+    
+    );
+    
     // --- data packager ---
-    data_packager u_packager(
+    data_packager u_data_packager(
         .clk                (CLK),
-        .arst_n             (ARESET_N),
+        .rst                (RESET),
         .poll_trigger       (),
         .i_gps              (),
         .i_accel            (),
@@ -26,6 +31,16 @@ module top(
         .o_packaged_word    (),
         .o_valid            (),
         .o_addr             ()
+    );
+    
+    // --- sensor polling ---
+    sensor_polling u_sensor_polling(
+    
+    );
+    
+    // --- sensors top ---
+    sensors_top u_sensors_top(
+    
     );
     
 endmodule
