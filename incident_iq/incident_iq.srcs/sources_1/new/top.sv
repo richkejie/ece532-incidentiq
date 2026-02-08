@@ -8,6 +8,9 @@ module top(
     );
     
     // --- internal wires ---
+    logic [63:0] w_data_packet;
+    logic w_data_packet_valid;
+    
     logic [31:0] w_data_packet_bram_addr;
     logic [31:0] w_data_packet_bram_din;
     logic [3:0] w_data_packet_bram_we;
@@ -31,7 +34,14 @@ module top(
     
     // -- crash detection ---
     crash_detection u_crash_detection(
-    
+        .clk(CLK),
+        .rst(RESET),
+        .i_packet(w_data_packet),
+        .i_packet_valid(w_data_packet_valid),
+        .i_accel_threshold(),
+        .i_orient_threshold(),
+        .i_temp_threshold(),
+        .o_crash_detected()
     );
     
     // --- data packager ---
@@ -44,8 +54,8 @@ module top(
         .i_gyro             (),             // from u_sensor_polling
         .i_temp             (),             // from u_sensor_polling
         .i_delta            (),             // from u_sensor_polling
-        .o_packet           (),
-        .o_packet_valid     (),
+        .o_packet           (w_data_packet),
+        .o_packet_valid     (w_data_packet_valid),
         
         // BRAM interface
         .o_data_packet_bram_addr(w_data_packet_bram_addr),
