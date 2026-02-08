@@ -30,7 +30,7 @@ module data_packager(
     logic [63:0]            packet;
     
     logic [63:0]            w_packet_d;
-    logic [63:0]            w_packet_valid;
+    logic                   w_packet_valid;
     
     assign o_packet         = w_packet_d;
     assign o_packet_valid   = w_packet_valid;
