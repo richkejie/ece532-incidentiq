@@ -1,0 +1,21 @@
+
+addrmap crash_detection_regs {
+    name = "Crash Detection Register Map";
+    desc = "Configuration registers for crash detection module";
+
+    reg {
+        name = "Speed Threshold";
+        desc = "speed threshold to determine whether to classify crash as non-fatal or fatal";
+        field {
+            reset = 32'd20; // default to 20km/h
+        } val[31:0];
+    } speed_threshold;
+
+    reg {
+        name = "Non-fatal Accel Threshold";
+        desc = "determines the acceleration to trigger a non-fatal crash state";
+        field {
+            reset = 32'd50; // default to ~5G
+        } val[31:0];
+    } non_fatal_accel_threshold;
+};
