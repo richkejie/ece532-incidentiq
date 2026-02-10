@@ -8,6 +8,7 @@ module i2c_master_general(
     input wire rw,
     input wire [6:0] slave_addr,
     input wire [7:0] w_data,
+    input wire [1:0] data_len,
     output reg [7:0] r_data,
     output reg busy,
     output reg ack_error,
@@ -45,6 +46,7 @@ localparam IDLE = 0, START = 1, ADDR = 2, ACK1 = 3, REG = 4, ACK2 = 5, DATA = 6,
 reg [2:0] state;
 reg [3:0] bit_cnt;
 reg [7:0] data_addr_reg;
+reg [1:0] bytes_left;
 
 always @(posedge i2c_clk or posedge reset) begin
     if (reset) begin
@@ -72,6 +74,7 @@ always @(posedge i2c_clk or posedge reset) begin
                 data_addr_reg <= { slave_addr, rw }; // load slave address and R/W bit into shift register
                 bit_cnt <= 7;
                 state <= ADDR;
+                bytes_left <= data_len;
             end
 
             ADDR: begin
@@ -106,7 +109,16 @@ always @(posedge i2c_clk or posedge reset) begin
                 
                 if (bit_cnt == 0) begin
                     state <= ACK2;
-                    sda_output_en <= rw;
+                    if (rw) begin
+                        sda_output_en <= 1;
+                        if (bytes_left == 1) begin
+                            sda_out <= 1;
+                        end else begin
+                            sda_out <= 0;
+                        end
+                    end else begin
+                        sda_output_en <= 0; // release SDA for ACK from slave after write
+                    end
                 end else begin
                     bit_cnt <= bit_cnt - 1;
                 end
@@ -114,7 +126,20 @@ always @(posedge i2c_clk or posedge reset) begin
 
             ACK2: begin
                 ack_error <= sda; // check for ACK/NACK from slave
-                state <= STOP;
+
+                if (ack_error && rw == 0) begin
+                    state <= STOP; // if no ACK on write, stop transaction
+                end else begin
+                    bytes_left <= bytes_left - 1;
+                    if (bytes_left > 1) begin
+                        bit_cnt <= 7;
+                        state <= DATA;
+                        sda_output_en <= (rw == 0); // output data for writes, release for reads
+                        sda_out <= 0; // ACK for reads, data for writes
+                    end else begin
+                        state <= STOP;
+                    end
+                end
             end
 
             STOP: begin
