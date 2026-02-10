@@ -61,6 +61,7 @@ READ HYST cmd 7
         .slave_addr(slave_addr),
         .w_data(w_data),
         .r_data(r_data),
+        .data_len(multi_byte ? 2 : 1), // if multi_byte is set, we need to read/write 2 bytes
         .busy(busy),
         .done(done),
         .ack_error(error),    // optional
