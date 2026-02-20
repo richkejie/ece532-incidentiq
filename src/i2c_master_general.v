@@ -5,10 +5,11 @@ module i2c_master_general(
     input wire reset,
 
     input wire start,
-    input wire rw,
+    input wire rw, //read =1, write=0
     input wire [6:0] slave_addr,
-    input wire [15:0] w_data,
-    input wire [1:0] data_len,
+    input wire [15:0] w_data, //if single byte, use lower 8 bits and ignore upper 8 bits
+    input wire multi_byte, //set to 1 if multiple bytes (ie 2 bytes), else 0 for single byte
+    // input wire [1:0] data_len,
     output reg [15:0] r_data,
     output reg busy,
     output reg ack_error,
@@ -39,7 +40,7 @@ end
 assign scl = i2c_clk;
 
 reg sda_out, sda_output_en;
-assign sda = sda_output_en ? sda_out : 1'bz;
+assign sda = sda_output_en ? sda_out : 1'bz; // when output enabled, drive sda_out; otherwise high impedance for reading
 
 localparam IDLE = 0, START = 1, ADDR = 2, ACK1 = 3, REG = 4, ACK2 = 5, DATA = 6, ACK3 = 7, STOP = 8;
 
@@ -72,17 +73,23 @@ always @(posedge i2c_clk or posedge reset) begin
                     sda_out <= 1;
                 end
             end
+            //might need to latch inputs at start of transaction to avoid issues with changing inputs during transaction (TODO)
             START: begin //start condition is SDA goes low while SCL is high
                 sda_out <= 0;
                 data_addr_reg <= { slave_addr, rw }; // load slave address and R/W bit into shift register
-                w_buffer <= (data_len == 0 || data_len == 1) ? {w_data[7:0], 8'h00} : w_data; // if there is only 1 byte to write, put it in the upper byte of the buffer
                 bit_cnt <= 7;
-                latched_data_len <= (data_len == 0) ? 1 : data_len;
                 state <= ADDR;
-                byte_idx <= 0;
-                bytes_left <= (data_len == 0) ? 1 : data_len; // default to 1 byte if data_len is 0
+                byte_idx <= multi_byte; // if multi_byte is 1, start with byte_idx 1 for data phase, else start with byte_idx 0 for single byte
+                // latched_data_len <= (data_len == 0) ? 1 : data_len;
+                // latched_data_len <= data_len; // latch data length at start of transaction
+                
+                // w_buffer <= (multi_byte) ? {w_data[7:0], 8'h00} : w_data; // if there is only 1 byte to write, put it in the upper byte of the buffer
+                w_buffer <= w_data; // always load full 16 bits, but for single byte transactions we will only use the lower 8 bits and ignore the upper 8 bits
+                // byte_idx <= 0;
+                
+                // bytes_left <= (data_len == 0) ? 1 : data_len; // default to 1 byte if data_len is 0
+                // bytes_left <= data_len; // use latched data length to track bytes left in transaction
             end
-
             ADDR: begin
                 //sends addr one bit at a time, MSB first
                 //once all bits sent, move to ACK state
@@ -106,71 +113,103 @@ always @(posedge i2c_clk or posedge reset) begin
                     state <= DATA;
                 end
             end
+            // i think before this all is ok, but need to check next state logic
 
             DATA: begin
                 if (rw == 1'b0) begin // Write operation
-                    if (byte_idx == 0) begin
-                        sda_out <= w_buffer[bit_cnt+8]; // MSB first
-                    end else begin
-                        sda_out <= w_buffer[bit_cnt]; // then LSB
-                    end
-                    // sda_out <= data_addr_reg[bit_cnt];
-                end else begin // Read operation
-                    if (byte_idx == 0) begin
-                        r_data[bit_cnt+8] <= sda;
-                    end else begin
-                        r_data[bit_cnt] <= sda;
-                    end
-                end
-                
-                if (bit_cnt == 0) begin
-                    state <= ACK2;
-                    if (rw) begin
-                        sda_output_en <= 1;
-                        sda_out <= (bytes_left == 1) ? 1 : 0; // ACK for all but last byte
-                        // if (bytes_left == 1) begin
-                        //     sda_out <= 1;
-                        // end else begin
-                        //     sda_out <= 0;
-                        // end
-                    end else begin
+                    sda_out <= w_data[byte_idx*8 + bit_cnt]; // MSB first
+
+                    if (bit_cnt == 0) begin
+                        state <= ACK2;
                         sda_output_en <= 0; // release SDA for ACK from slave after write
+                    end else begin
+                        bit_cnt <= bit_cnt - 1;
                     end
-                end else begin
-                    bit_cnt <= bit_cnt - 1;
                 end
+                // end else begin // Read operation
+                //     r_data[byte_idx*8 + bit_cnt] <= sda;
+                // end
+                // if (rw == 1'b0) begin // Write operation
+                //     if (byte_idx == 0) begin
+                //         sda_out <= w_buffer[bit_cnt+8]; // MSB first
+                //     end else begin
+                //         sda_out <= w_buffer[bit_cnt]; // then LSB
+                //     end
+                //     // sda_out <= data_addr_reg[bit_cnt];
+                // end else begin // Read operation
+                //     if (byte_idx == 0) begin
+                //         r_data[bit_cnt+8] <= sda;
+                //     end else begin
+                //         r_data[bit_cnt] <= sda;
+                //     end
+                // end
+                
+                // if (bit_cnt == 0) begin
+                //     state <= ACK2;
+                //     if (rw) begin
+                //         sda_output_en <= 1;
+                //         sda_out <= (bytes_left == 1) ? 1 : 0; // ACK for all but last byte
+                //         // if (bytes_left == 1) begin
+                //         //     sda_out <= 1;
+                //         // end else begin
+                //         //     sda_out <= 0;
+                //         // end
+                //     end else begin
+                //         sda_output_en <= 0; // release SDA for ACK from slave after write
+                //     end
+                // end else begin
+                //     bit_cnt <= bit_cnt - 1;
+                // end
             end
 
             ACK2: begin
                 ack_error <= sda; // check for ACK/NACK from slave
-
-                if (ack_error && rw == 0) begin
-                    state <= STOP; // if no ACK on write, stop transaction
+                
+                if (ack_error && rw == 0) begin //is there a need for rw == 0? TODO
+                    state <= STOP; // if no ACK, stop transaction
                 end else begin
-                    bytes_left <= bytes_left - 1;
-                    if (bytes_left > 1) begin
-                        byte_idx <= byte_idx + 1;
-                        bit_cnt <= 7;
-                        state <= DATA;
-                        sda_output_en <= (rw == 0); // output data for writes, release for reads
-                        sda_out <= 0; // ACK for reads, data for writes
-                    end else begin
-                        state <= STOP;
+                    if (rw == 0) begin //for writes
+                        if (byte_idx) begin
+                            byte_idx <= byte_idx - 1;
+                            bit_cnt <= 7;
+                            sda_output_en <= 1; // output data for next byte if there are more bytes to write
+                            state <= DATA;
+                        end else begin
+                            state <= STOP;
+                        end
+                        // data_addr_reg <= w_data; // load register address into shift register for next phase
+                        // bit_cnt <= 7;
+                        // sda_output_en <= 1;
+                        // state <= DATA;
                     end
                 end
+                // if (ack_error && rw == 0) begin
+                //     state <= STOP; // if no ACK on write, stop transaction
+                // end else begin
+                //     bytes_left <= bytes_left - 1;
+                //     if (bytes_left > 1) begin
+                //         byte_idx <= byte_idx + 1;
+                //         bit_cnt <= 7;
+                //         state <= DATA;
+                //         sda_output_en <= (rw == 0); // output data for writes, release for reads
+                //         sda_out <= 0; // ACK for reads, data for writes
+                //     end else begin
+                //         state <= STOP;
+                //     end
+                // end
             end
 
             STOP: begin
-                sda_out <= 0;
+                sda_out <= 0; 
                 sda_output_en <= 1;
-                if (latched_data_len == 1) begin
-                    r_data <= {8'h00, r_data[15:8]}; // if only 1 byte read, shift to lower byte
-                end
+                // if (latched_data_len == 1) begin
+                //     r_data <= {8'h00, r_data[15:8]}; // if only 1 byte read, shift to lower byte
+                // end
                 sda_out <= 1; // STOP condition: SDA goes high while SCL is high
                 busy <= 0;
                 done <= 1;
                 state <= IDLE;
-                byte_idx <= 0;
+                // byte_idx <= 0;
             end
         endcase
     end
