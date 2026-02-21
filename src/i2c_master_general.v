@@ -56,7 +56,6 @@ reg rw_flag; //rw bit
 reg [7:0] latch_slave_addr; // latched slave address
 reg repeat_start; // flag to indicate if we require a repeated start (ie. is this a read transaction); set to rw input at start of transaction, cleared after using it for repeated start
 reg [7:0] latch_reg_addr; // latched register address
-reg start_phase;
 
 always @(posedge scl or negedge reset_n) begin
     if (reset_n == 1'b0) begin
@@ -68,14 +67,12 @@ always @(posedge scl or negedge reset_n) begin
         r_data <= 16'h0; 
         done <= 0;
         repeat_start <= 0;
-        start_phase <= 0;
     end else begin
         case (state)
             IDLE: begin
                 done <= 0;
                 sda_output_en <= 0; // release SDA line in IDLE state
                 sda_out <= 1; // keep SDA high in IDLE state
-                start_phase <= 0; // reset start_phase flag at beginning of IDLE state
 
                 // wait for start signal, then move to START state to generate start condition
                 if (start) begin
@@ -103,9 +100,9 @@ always @(posedge scl or negedge reset_n) begin
                 data_addr_reg <= { latch_slave_addr, rw_flag }; // load slave address and R/W bit into shift register for next phase
                 state <= ADDR;
             end
+
             ADDR: begin
                 //sends addr one bit at a time, MSB first
-                //once all bits sent, move to ACK state
                 sda_out <= data_addr_reg[bit_cnt];
                 if (bit_cnt == 0) begin
                     state <= ACK_ADDR;
@@ -128,10 +125,10 @@ always @(posedge scl or negedge reset_n) begin
             end
             
             REG: begin
-                sda_out <= data_addr_reg[bit_cnt]; // send register address MSB first
+                sda_out <= data_addr_reg[bit_cnt]; // send register address, one bit at a time, MSB first
                 if (bit_cnt == 0) begin
                     state <= ACK_REG;
-                    sda_output_en <= 0; // release SDA for ACK from slave after sending register address
+                    sda_output_en <= 0; // release SDA for ACK from slave after sending register address to allow for ACK from slave
                 end else begin
                     bit_cnt <= bit_cnt - 1;
                 end
@@ -145,10 +142,9 @@ always @(posedge scl or negedge reset_n) begin
                     bit_cnt <= 7;
                     if (repeat_start) begin
                         //if this is a read transaction, we need to do a repeated start after sending the register address
-                        // sda_output_en<=1;
+
                         sda_output_en<=0; // release SDA to prepare for repeated start condition (SDA goes low while SCL is high), we will drive SDA low in START state of repeated start
-                        // sda_out<=1; 
-                        repeat_start <= 0; // clear repeat_start flag after using it
+                        repeat_start <= 0; 
                         state <= START; // if this is a read transaction, we need to do a repeated start after sending the register address
                         rw_flag <= 1; // set rw_flag to 1 for repeated start to indicate read phase
                     end else begin
@@ -160,7 +156,7 @@ always @(posedge scl or negedge reset_n) begin
 
             DATA: begin
                 if (rw_flag == 1'b0) begin // Write operation
-                    sda_out <= w_buffer[byte_index*8 + bit_cnt]; // MSB first
+                    sda_out <= w_buffer[byte_index*8 + bit_cnt]; //send data bits, one at a time, MSB first for each byte
 
                     if (bit_cnt == 0) begin
                         state <= ACK_DATA;
@@ -182,8 +178,9 @@ always @(posedge scl or negedge reset_n) begin
             end
 
             ACK_DATA: begin
-                ack_error <= sda; // check for ACK/NACK from slave, but only treat it as an error if we were writing data (rw_flag == 0)
+                ack_error <= sda; 
                 
+                // check for ACK/NACK from slave, but only treat it as an error if we were writing data (rw_flag == 0)
                 if (sda && rw_flag == 0) begin
                     state <= STOP; 
                 end else begin
@@ -191,29 +188,10 @@ always @(posedge scl or negedge reset_n) begin
                         byte_index <= 0;
                         bit_cnt <= 7;
                         state <= DATA;
-                        sda_output_en <= !rw_flag; // for writes, output next byte;
+                        sda_output_en <= !rw_flag; // for writes, set sda_output_en to 1 to output next byte; for reads, keep sda_output_en at 0 to release SDA for slave to output next byte
                     end else begin
                         state <= STOP;
                     end
-                    // if (rw_flag == 0) begin //for writes
-                    //     if (byte_index) begin
-                    //         byte_index <= 0;
-                    //         bit_cnt <= 7;
-                    //         sda_output_en <= 1; // output data for next byte if there are more bytes to write
-                    //         state <= DATA;
-                    //     end else begin
-                    //         state <= STOP;
-                    //     end
-                    // end else if (rw_flag == 1) begin //for reads
-                    //     if (byte_index) begin
-                    //         byte_index <= 0;
-                    //         bit_cnt <= 7;
-                    //         state <= DATA;
-                    //         sda_output_en <= 0; // release SDA for slave to output data
-                    //     end else begin
-                    //         state <= STOP;
-                    //     end
-                    // end
                 end
             end
 
