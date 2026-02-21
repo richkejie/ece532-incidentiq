@@ -2,7 +2,7 @@
 
 module temp_sensor_driver (
     input  wire clk,
-    input  wire reset,
+    input  wire reset_n,
     input  wire cmd_valid,          // trigger a high-level command
     input  wire rw,                 // 1 = read, 0 = write
     input  wire [2:0] high_level_cmd,
@@ -10,7 +10,10 @@ module temp_sensor_driver (
 
     output reg  cmd_done,
     output reg  [12:0] read_data,
-    output reg  error
+    output reg  error,
+    output wire scl, 
+    inout wire sda,
+    output reg busy
 );
 
     // Internal signals to i2c master
@@ -18,10 +21,6 @@ module temp_sensor_driver (
     reg [6:0] slave_addr;
     reg [7:0] w_data;
     wire [15:0] r_data;
-    wire busy;
-    wire done;
-    wire scl;
-    wire sda;
     reg [7:0] cmd_reg;
     reg multi_byte; // flag to indicate if we need to read/write multiple bytes
 
@@ -31,19 +30,20 @@ module temp_sensor_driver (
 
     // I2C master instance
     i2c_master_general u_i2c (
-        .clk(clk),
-        .reset(reset),
         .start(start),
-        .rw(latched_rw),
+        .clk(clk),
+        .reset_n(reset_n),
         .slave_addr(slave_addr),
+        .rw(latched_rw),
+        .reg_addr(latched_cmd_reg),
         .w_data(w_data),
+        .multi_byte(latched_multi_byte),
         .r_data(r_data),
-        .data_len(latched_multi_byte ? 2 : 1),
         .busy(busy),
-        .done(done),
         .ack_error(error),
+        .done(cmd_done),
         .scl(scl),
-        .sda(sda)
+        .sda(sda) 
     );
 
     // Determine register address and multi-byte flag
@@ -61,12 +61,12 @@ module temp_sensor_driver (
         endcase
     end
 
-    // FSM
-    localparam IDLE = 0, WAIT_PTR = 1, TRANSACTION = 2;
-    reg [1:0] state;
+    // Simplified FSM: IDLE and COMPLETE
+    localparam IDLE = 0, COMPLETE = 1;
+    reg state;
 
-    always @(posedge clk or posedge reset) begin
-        if (reset) begin
+    always @(posedge clk or negedge reset_n) begin
+        if (!reset_n) begin
             state <= IDLE;
             start <= 0;
             cmd_done <= 0;
@@ -74,34 +74,24 @@ module temp_sensor_driver (
             case(state)
                 IDLE: begin
                     cmd_done <= 0;
-                    if(cmd_valid && !busy) begin
-                        latched_cmd_reg <= cmd_reg;
-                        latched_multi_byte <= multi_byte;
-                        latched_rw <= rw;
-
-                        if(rw == 0) w_data <= cmd_value[15:8]; // first byte for writes
-                        start <= 1;
-                        state <= WAIT_PTR;
-                    end else start <= 0;
-                end
-
-                WAIT_PTR: begin
                     start <= 0;
-                    if(done) begin
-                        start <= 1;
-                        w_data <= (latched_rw == 0) ? cmd_value[15:8] : latched_cmd_reg;
-                        state <= TRANSACTION;
+                    if(cmd_valid && !busy) begin
+                        latched_cmd_reg    <= cmd_reg;
+                        latched_multi_byte <= multi_byte;
+                        latched_rw         <= rw;
+                        if(rw == 0) w_data <= cmd_value;
+                        start <= 1; // single-cycle pulse
+                        state <= COMPLETE;
                     end
                 end
 
-                TRANSACTION: begin
-                    start <= 0;
-                    if(done) begin
+                COMPLETE: begin
+                    start <= 0; // ensure start is a single-cycle pulse
+                    if(cmd_done) begin
                         if(latched_rw) begin
-                            // combine multi-byte read if needed
-                            read_data <= latched_multi_byte ? r_data[15:3] : {5'b0, r_data[7:0]};
+                            read_data <= latched_multi_byte ? r_data[15:0] : {8'b0, r_data[7:0]};
                         end
-                        cmd_done <= 1;
+                        // cmd_done <= 1; // pulse to indicate command complete
                         state <= IDLE;
                     end
                 end
