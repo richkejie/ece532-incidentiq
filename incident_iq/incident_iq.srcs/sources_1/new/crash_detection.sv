@@ -4,7 +4,7 @@ module crash_detection #(
         parameter int HISTORY_LEN = 16 // must be a power of 2
     )(
         input   logic           clk,
-        input   logic           rst,
+        input   logic           arst_n,
         
         input   logic           i_state_rst,
         
@@ -28,56 +28,40 @@ module crash_detection #(
     );
 
     // --------------- Sensor Data ---------------
-    logic [15:0] gps;
-    logic [15:0] accel;
-    logic [15:0] gyro;
-    logic [15:0] delta;
-    
-    always_ff @(posedge clk) begin
-        if (rst) begin
-            gps             <= '0;
-            accel           <= '0;
-            gyro            <= '0;
-            delta           <= '0;
-        end else if (i_sensors_valid) begin
-            gps             <= i_gps;
-            accel           <= i_accel;
-            gyro            <= i_gyro;
-            delta           <= i_delta;
-        end // otherwise keeps the same data
-    end
 
-    logic [15:0][HISTORY_LEN:0] shift_gps, shift_accel, shift_gyro;
-    logic [15:0][HISTORY_LEN-1:0] shift_delta;
+    logic [HISTORY_LEN:0][15:0] shift_gps;
+    logic [HISTORY_LEN-1:0][15:0] shift_delta, shift_accel, shift_gyro;
     
-    // this adds 1 cycle delay, inputs clocked into signals previously,
-    // then starts to be shifted into the shift registers
-    always_ff @(posedge clk) begin
-        if (rst) begin
+    always_ff @(posedge clk or negedge arst_n) begin
+        if (~arst_n) begin
+            shift_gps       <= '0;
+            shift_accel     <= '0;
+            shift_gyro      <= '0;
+            shift_delta     <= '0;
+        end else if (i_state_rst) begin
             shift_gps       <= '0;
             shift_accel     <= '0;
             shift_gyro      <= '0;
             shift_delta     <= '0;
         end else if (i_sensors_valid) begin
-            shift_gps       <= {shift_gps[HISTORY_LEN-1:0],gps};
-            shift_accel     <= {shift_accel[HISTORY_LEN-1:0],accel};
-            shift_gyro      <= {shift_gyro[HISTORY_LEN-1:0],gyro};
-            shift_delta     <= {shift_delta[HISTORY_LEN-1-1:0],delta};
+            shift_gps       <= {shift_gps[HISTORY_LEN-1:0],i_gps};
+            shift_accel     <= {shift_accel[HISTORY_LEN-1-1:0],i_accel};
+            shift_gyro      <= {shift_gyro[HISTORY_LEN-1-1:0],i_gyro};
+            shift_delta     <= {shift_delta[HISTORY_LEN-1-1:0],i_delta};
         end // otherwise keeps the same data
     end
     
-    // need 4 extra bits to hold sum of 16 16-bit numbers
-    // running sums will also be a 1 cycle delay from the shift registers
+    // pure combinational add --- may not meet timing...
     logic [HISTORY_LEN-1+3:0] accel_running_sum, gyro_running_sum, delta_running_sum;
-    always_ff @(posedge clk) begin
-        if (rst) begin
-            accel_running_sum       <= '0;
-            gyro_running_sum        <= '0;
-            delta_running_sum       <= '0;
-        end else if (i_sensors_valid) begin 
-            accel_running_sum       <= accel_running_sum + shift_accel[1] - shift_accel[16];
-            gyro_running_sum        <= gyro_running_sum + shift_gyro[1] - shift_gyro[16];
-            delta_running_sum       <= delta_running_sum + shift_delta[0] - shift_delta[15];
+    
+    always_comb begin
+        accel_running_sum = '0;
+        gyro_running_sum = '0;
+        delta_running_sum = '0;
+        for (int i =0; i <= HISTORY_LEN-1; i++) begin
+            accel_running_sum = accel_running_sum + shift_accel[i];
+            gyro_running_sum = gyro_running_sum + shift_gyro[i];
+            delta_running_sum = delta_running_sum + shift_delta[i];
         end
     end
     
@@ -93,18 +77,18 @@ module crash_detection #(
     always_comb begin
         for (int i = 0; i < HISTORY_LEN; i++) begin
             if (shift_delta[i] > 0) begin
-                inst_speeds[i] = (shift_gps[i+1] - shift_gps[i]) / shift_delta[i];
+                inst_speeds[i] = (shift_gps[i] - shift_gps[i+1]) / shift_delta[i];
             end else begin
                 inst_speeds[i] = '0;
             end
         end
     end
     
-    always_ff @(posedge clk) begin
-        if (rst) begin
-            speed_running_sum       <= '0;
-        end else if (i_sensors_valid) begin
-            speed_running_sum       <= speed_running_sum + inst_speeds[0] - inst_speeds[15];
+    // pure combinational add --- may not meet timing...
+    always_comb begin
+        speed_running_sum = '0;
+        for (int i =0; i <= HISTORY_LEN-1; i++) begin
+            speed_running_sum = speed_running_sum + inst_speeds[i];
         end
     end
     
@@ -119,8 +103,8 @@ module crash_detection #(
     
     crash_state_t state, state_next;
     
-    always_ff @(posedge clk) begin
-        if (rst) begin
+    always_ff @(posedge clk or negedge arst_n) begin
+        if (~arst_n) begin
             state       <= SAFE;
         end else if (i_state_rst) begin
             state       <= SAFE;

@@ -2,14 +2,14 @@
 
 module crash_detection_tb();
 
-    parameter HISTORY_LEN = 10;
+    parameter HISTORY_LEN = 16;
 
     parameter CLK_PERIOD = 10; // 100 MHz clock
     parameter RESET_CYCLES = 5;
 
 
     logic clk;
-    logic rst;
+    logic arst_n;
 
     // inputs to crash_detection
     logic           i_state_rst;
@@ -20,7 +20,7 @@ module crash_detection_tb();
     logic [15:0]    i_delta;
 
     logic [31:0]    ireg_speed_threshold                = 32'd20; // 20km/h
-    logic [31:0]    ireg_non_fatal_accel_threshold      = 32'd50; // ~5G
+    logic [31:0]    ireg_non_fatal_accel_threshold      = 32'd45; // ~5G
     logic [31:0]    ireg_fatal_accel_threshold          = 32'd70; // ~7G
     logic [31:0]    ireg_angle_threshold                = 32'd45; // 45 degrees
     logic [31:0]    ireg_angle_in_motion_threshold;                 // unused
@@ -32,7 +32,7 @@ module crash_detection_tb();
     logic           o_fatal_intr;
 
     // expected
-    logic [63:0]    expected_packet;
+//    logic [63:0]    expected_packet;
 
     crash_detection #(
         .HISTORY_LEN(HISTORY_LEN)
@@ -56,9 +56,9 @@ module crash_detection_tb();
     // apply reset cleanly for 5 cycles
     task apply_reset;
         $display("%0t: apply reset", $time);
-        rst = 1;
+        arst_n = 0;
         repeat (RESET_CYCLES) @(posedge clk);
-        rst = 0;
+        arst_n = 1;
         repeat (2) @(posedge clk);
     endtask
 
@@ -79,13 +79,13 @@ module crash_detection_tb();
     );
         begin
             @(posedge clk);
-            i_sensors_valid     <= 1'b1;
-            i_gps               <= gps;
-            i_accel             <= accel;
-            i_gyro              <= gyro; 
-            i_delta             <= delta;
+            i_sensors_valid = 1'b1;
+            i_gps = gps;
+            i_accel = accel;
+            i_gyro = gyro; 
+            i_delta = delta;
             @(posedge clk);
-            i_sensors_valid     <= 1'b0;
+            i_sensors_valid = 1'b0;
         end
     endtask
 
@@ -125,9 +125,13 @@ module crash_detection_tb();
         // high speed + high accel + rotation
         $display("%0t: TC3: High-speed crash (Fatal)", $time);
         for (int i = 0; i < 16; i++) begin
-            send_sample(16'd1000 + (i*100), 16'd20, 16'd0, 16'd1); // fill history with high speed first
+            send_sample(16'd1000 + (i*100), 16'd20 + (i*10), 16'd0, 16'd1); // fill history with high speed first
         end
         send_sample(16'd2600, 16'd100, 16'd80, 16'd1); // impact
+        repeat (10) @(posedge clk);
+        
+        reset_state();
+        
         repeat (10) @(posedge clk);
 
         simulation_done = 1;
@@ -142,11 +146,11 @@ module crash_detection_tb();
     end
 
     // // Simple logging assertion
-    // always @(posedge o_fatal_intr) 
-    //     $display("%0t [ASSERTION] Fatal Crash Detected!", $time);
+     always @(posedge o_fatal_intr) 
+         $display("%0t [ASSERTION] Fatal Crash Detected!", $time);
 
-    // always @(posedge o_non_fatal_intr) 
-    //     $display("%0t [ASSERTION] Non-Fatal Crash Detected!", $time);
+     always @(posedge o_non_fatal_intr) 
+         $display("%0t [ASSERTION] Non-Fatal Crash Detected!", $time);
 
     // #### end sim ####
     initial begin
