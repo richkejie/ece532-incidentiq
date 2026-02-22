@@ -2,7 +2,7 @@
 
 module data_packager(
     input   logic           clk,
-    input   logic           rst,             // sync active high reset
+    input   logic           arst_n,             // async active low reset
     
     // control from polling module
     input   logic           in_valid,
@@ -49,8 +49,8 @@ module data_packager(
     // need 11 bits to count all the words
     logic [10:0] word_counter;
  
-    always_ff @(posedge clk) begin
-        if (rst) begin
+    always_ff @(posedge clk or negedge arst_n) begin
+        if (~arst_n) begin
             w_packet_d                          <= '0;
             w_packet_valid                      <= 1'b0;
             word_counter                        <= '0;
@@ -70,7 +70,7 @@ module data_packager(
     // or increase bus width of bram
     bram_writer u_data_packet_mem_writer(
         .clk(clk),
-        .rst(rst),
+        .rst(arst_n),
         .i_valid(w_packet_valid),
         .i_data(w_packet_d[31:0]),
         .i_bram_addr({21'd0, word_counter}),
