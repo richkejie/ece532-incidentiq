@@ -2,7 +2,7 @@
 
 module top(
     input   logic           CLK,        // board clock crystal (100 MHZ?)
-    input   logic           RESET       // reset button (sync active high)
+    input   logic           ARESET_N    // reset button (sync active high)
     
     // outputs?
     );
@@ -20,7 +20,7 @@ module top(
     system_top_wrapper u_system_top(
         .diff_clock_rtl_clk_n(), // differential clock n --- determine where to connect on board
         .diff_clock_rtl_clk_p(), // differential clock p
-        .reset(RESET),
+        .aresetn(ARESET_N),
         
         // data_packet_mem BRAM_PORTB
         .data_packet_bram_port_addr(w_data_packet_bram_addr),
@@ -28,14 +28,14 @@ module top(
         .data_packet_bram_port_din(w_data_packet_bram_din),
         .data_packet_bram_port_dout(),      // unconnected, data packager does not need to read from the buffer
         .data_packet_bram_port_en(w_data_packet_bram_en),
-        .data_packet_bram_port_rst(RESET),  // resets dout, so not necessary since not reading
+        .data_packet_bram_port_rst(ARESET_N),  // resets dout, so not necessary since not reading
         .data_packet_bram_port_we(w_data_packet_bram_we)         // 4-byte we   
     );
     
     // -- crash detection ---
     crash_detection u_crash_detection(
         .clk(CLK),
-        .rst(RESET),
+        .arst_n(ARESET_N),
         .i_packet(w_data_packet),
         .i_packet_valid(w_data_packet_valid),
         .i_accel_threshold(),
@@ -47,7 +47,7 @@ module top(
     // --- data packager ---
     data_packager u_data_packager(
         .clk                (CLK),
-        .rst                (RESET),
+        .rst                (ARESET_N),
         .in_valid           (),             // from u_sensor_polling
         .i_gps              (),             // from u_sensor_polling
         .i_accel            (),             // from u_sensor_polling
