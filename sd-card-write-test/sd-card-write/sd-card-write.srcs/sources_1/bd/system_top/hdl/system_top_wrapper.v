@@ -1,7 +1,7 @@
 //Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2018.3 (win64) Build 2405991 Thu Dec  6 23:38:27 MST 2018
-//Date        : Mon Feb 23 00:05:28 2026
+//Date        : Mon Feb 23 11:15:25 2026
 //Host        : Richard_PC running 64-bit major release  (build 9200)
 //Command     : generate_target system_top_wrapper.bd
 //Design      : system_top_wrapper
@@ -15,13 +15,17 @@ module system_top_wrapper
     acl_spi_sck_io,
     acl_spi_ss_io,
     reset,
-    sys_clock);
+    sys_clock,
+    usb_uart_rxd,
+    usb_uart_txd);
   inout acl_spi_io0_io;
   inout acl_spi_io1_io;
   inout acl_spi_sck_io;
   inout acl_spi_ss_io;
   input reset;
   input sys_clock;
+  input usb_uart_rxd;
+  output usb_uart_txd;
 
   wire acl_spi_io0_i;
   wire acl_spi_io0_io;
@@ -41,6 +45,8 @@ module system_top_wrapper
   wire acl_spi_ss_t;
   wire reset;
   wire sys_clock;
+  wire usb_uart_rxd;
+  wire usb_uart_txd;
 
   IOBUF acl_spi_io0_iobuf
        (.I(acl_spi_io0_o),
@@ -76,5 +82,7 @@ module system_top_wrapper
         .acl_spi_ss_o(acl_spi_ss_o),
         .acl_spi_ss_t(acl_spi_ss_t),
         .reset(reset),
-        .sys_clock(sys_clock));
+        .sys_clock(sys_clock),
+        .usb_uart_rxd(usb_uart_rxd),
+        .usb_uart_txd(usb_uart_txd));
 endmodule
