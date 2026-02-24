@@ -10,11 +10,11 @@ module axi_vip_mst_tests();
     verif_data_packet_write_axi_vip_0_0_mst_t       agent;
 
     // axi related variables
-    xil_axi_data_beat                               rd_data;
+    xil_axi_data_beat                               rd_data[];
 
     // address offsets --- check address editor
     localparam DATA_PACKET_BASE_ADDR        = 32'h0000_0000;
-    localparam TB_TEST_ADDR                 = DATA_PACKET_BASE_ADDR + 8;
+    localparam TB_TEST_ADDR                 = DATA_PACKET_BASE_ADDR + 4;
 
     initial begin
         // create and start agent
@@ -23,10 +23,33 @@ module axi_vip_mst_tests();
 
         wait(data_packet_write_tb.start_simulation == 1);
 
-        $display("%0t: [TB] Writing 32'd169 to address 32'h0000_0000", $time);
-        write_bram(TB_TEST_ADDR, 32'd169);
+        $display("%0t: [TB] Writing 32'd0 to address 32'h0000_0004", $time);
+        write_bram(TB_TEST_ADDR, 32'd0);
         agent.wait_drivers_idle();
         $display("%0t: [TB] Write Complete", $time);
+
+        // Test Case 1: Send a basic packet
+        $display("%0t: TC1: Sending Sample 1..., should write to address 32'h0000_0004", $time);
+        data_packet_write_tb.send_sample(16'hAAAA, 16'hBBBB, 16'hCCCC, 8'hDD, 8'hEE);
+
+        repeat(10) @(posedge data_packet_write_tb.clk);
+        $display("%0t: [TB] Reading back from address 32'h0000_0004", $time);
+        read_bram(TB_TEST_ADDR, rd_data);
+        $display("%0t: [TB] rdata: %0x", $time, rd_data[0]);
+
+        // $display("%0t: [TB] Writing 32'd169 to address 32'h0000_0000", $time);
+        // write_bram(TB_TEST_ADDR, 32'd169);
+        // agent.wait_drivers_idle();
+        // $display("%0t: [TB] Write Complete", $time);
+
+        // $display("%0t: [TB] Reading back from address 32'h0000_0000", $time);
+        // read_bram(TB_TEST_ADDR, rd_data);
+
+        // // verify
+        // if (rd_data[0] == 32'd169)
+        //     $display("[TB] PASS - Read data matches: %0d", rd_data[0]);
+        // else
+        //     $display("[TB] FAIL - Expected 169, got %0d", rd_data[0]);
 
         repeat(10) @(posedge data_packet_write_tb.clk);
         $finish;
@@ -42,8 +65,29 @@ module axi_vip_mst_tests();
         wr.set_write_cmd(addr, XIL_AXI_BURST_TYPE_INCR, 0, 0, xil_axi_size_t'(XIL_AXI_SIZE_4BYTE));
         wr.set_data_block(data);
         agent.wr_driver.send(wr);
-        
     endtask
+
+    // read task
+    task automatic read_bram(input bit [31:0] addr, output xil_axi_data_beat data[]);
+        axi_transaction rd;
+
+        $display("%0t: [TB] Read Start", $time);
+        rd = agent.rd_driver.create_transaction("read");
+        rd.set_read_cmd(addr, XIL_AXI_BURST_TYPE_INCR, 0, 0, xil_axi_size_t'(XIL_AXI_SIZE_4BYTE));
+        
+        rd.set_driver_return_item_policy(XIL_AXI_PAYLOAD_RETURN);
+        agent.rd_driver.send(rd);
+        agent.rd_driver.wait_rsp(rd);
+
+        data = new[rd.get_len()+1];
+        for ( xil_axi_uint beat=0; beat < rd.get_len()+1; beat++ ) begin
+            data[beat] = rd.get_data_beat(beat);
+        end
+
+        $display("%0t: [TB] Read Complete, data = %0x", $time, data[0]);
+    endtask
+
+
 
 endmodule
 
@@ -119,6 +163,28 @@ module data_packet_write_tb();
         repeat (RESET_CYCLES) @(posedge clk);
         arst_n = 1;
         repeat (RESET_CYCLES) @(posedge clk);
+    endtask
+
+    // send a sensor sample
+    task send_sample(
+        input [15:0] gps,
+        input [15:0] accel,
+        input [15:0] gyro,
+        input [7:0] temp,
+        input [7:0] delta
+    );
+        begin
+            @(posedge clk);
+            i_gps       <= gps;
+            i_accel     <= accel;
+            i_gyro      <= gyro;
+            i_temp      <= temp;
+            i_delta     <= delta;
+            @(posedge clk);
+            in_valid    <= 1'b1;
+            @(posedge clk);
+            in_valid    <= 1'b0;
+        end
     endtask
 
     // --------------main simulation code--------------

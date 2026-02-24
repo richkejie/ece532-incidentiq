@@ -1,0 +1,5 @@
+vhdl xil_defaultlib  \
+"../../../bd/verif_data_packet_write/ip/verif_data_packet_write_axi_bram_ctrl_0_0/sim/verif_data_packet_write_axi_bram_ctrl_0_0.vhd" \
+"../../../bd/verif_data_packet_write/ip/verif_data_packet_write_rst_clk_wiz_100M_0/sim/verif_data_packet_write_rst_clk_wiz_100M_0.vhd" \
+
+nosort
