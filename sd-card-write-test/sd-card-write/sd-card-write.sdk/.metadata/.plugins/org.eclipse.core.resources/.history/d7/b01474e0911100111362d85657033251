@@ -46,7 +46,7 @@
  */
 
 
-
+//#include "platform.h"
 //#include "xil_printf.h"
 //
 //
@@ -61,7 +61,6 @@
 //}
 
 #include <stdio.h>
-#include "platform.h"
 #include "ff.h"      // FatFs
 #include "xparameters.h"
 
@@ -71,8 +70,6 @@ FRESULT res;
 UINT bw;
 
 int main() {
-	init_platform();
-
     // Mount the filesystem
     res = f_mount(&fs, "0:", 1);
     if (res != FR_OK) {
@@ -94,6 +91,5 @@ int main() {
     f_close(&fil);
     f_unmount("0:");
 
-    cleanup_platform();
     return 0;
 }

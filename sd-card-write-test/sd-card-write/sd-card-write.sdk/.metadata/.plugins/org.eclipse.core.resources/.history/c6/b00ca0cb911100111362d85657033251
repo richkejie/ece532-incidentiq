@@ -45,54 +45,16 @@
  *   ps7_uart    115200 (configured by bootrom/bsp)
  */
 
-
-
-//#include "xil_printf.h"
-//
-//
-//int main()
-//{
-//    init_platform();
-//
-//    print("Hello World\n\r");
-//
-//    cleanup_platform();
-//    return 0;
-//}
-
 #include <stdio.h>
 #include "platform.h"
-#include "ff.h"      // FatFs
-#include "xparameters.h"
+#include "xil_printf.h"
 
-FATFS fs;
-FIL fil;
-FRESULT res;
-UINT bw;
 
-int main() {
-	init_platform();
+int main()
+{
+    init_platform();
 
-    // Mount the filesystem
-    res = f_mount(&fs, "0:", 1);
-    if (res != FR_OK) {
-        // Handle error
-        return -1;
-    }
-
-    // Open/create a file
-    res = f_open(&fil, "0:test.txt", FA_CREATE_ALWAYS | FA_WRITE);
-    if (res != FR_OK) {
-        return -1;
-    }
-
-    // Write data
-    char *data = "Hello from MicroBlaze!\n";
-    res = f_write(&fil, data, strlen(data), &bw);
-
-    // Close the file
-    f_close(&fil);
-    f_unmount("0:");
+    print("Hello World\n\r");
 
     cleanup_platform();
     return 0;

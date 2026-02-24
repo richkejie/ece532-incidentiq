@@ -94,6 +94,5 @@ int main() {
     f_close(&fil);
     f_unmount("0:");
 
-    cleanup_platform();
     return 0;
 }
