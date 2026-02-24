@@ -2,7 +2,7 @@
 
 module bram_writer(
     input   logic           clk,
-    input   logic           rst,
+    input   logic           arst_n,
     input   logic           i_valid,
     input   logic [31:0]    i_data,
     input   logic [31:0]    i_bram_addr,
@@ -15,8 +15,8 @@ module bram_writer(
     
     assign o_bram_en = 1'b1; // always enabled
     
-    always @(posedge clk) begin
-        if (rst) begin
+    always @(posedge clk or negedge arst_n) begin
+        if (~arst_n) begin
             o_bram_addr       <= '0;
             o_bram_din        <= '0;
             o_bram_we         <= '0;
@@ -26,6 +26,8 @@ module bram_writer(
                 o_bram_din    <= i_data;
                 o_bram_we     <= 4'b1111; // write all 4 bytes
             end else begin
+                o_bram_addr   <= '0;
+                o_bram_din    <= '0;
                 o_bram_we     <= '0;
             end
         end

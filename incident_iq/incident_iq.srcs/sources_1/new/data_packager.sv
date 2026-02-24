@@ -2,7 +2,7 @@
 
 module data_packager(
     input   logic           clk,
-    input   logic           rst,             // sync active high reset
+    input   logic           arst_n,             // async active low reset
     
     // control from polling module
     input   logic           in_valid,
@@ -32,8 +32,10 @@ module data_packager(
     logic [63:0]            w_packet_d;
     logic                   w_packet_valid;
     
-    assign o_packet         = w_packet_d;
-    assign o_packet_valid   = w_packet_valid;
+    // assign o_packet         = w_packet_d;
+    assign o_packet         = packet;
+    // assign o_packet_valid   = w_packet_valid;
+    assign o_packet_valid   = in_valid;
     
     always_comb begin
         packet = {
@@ -49,18 +51,18 @@ module data_packager(
     // need 11 bits to count all the words
     logic [10:0] word_counter;
  
-    always_ff @(posedge clk) begin
-        if (rst) begin
-            w_packet_d                          <= '0;
+    always_ff @(posedge clk or negedge arst_n) begin
+        if (~arst_n) begin
+            // w_packet_d                          <= '0;
             w_packet_valid                      <= 1'b0;
-            word_counter                        <= '0;
+            word_counter                        <= 11'd4;
         end else begin
             if (in_valid) begin
-                w_packet_d                      <= packet;
-                w_packet_valid                  <= 1'b1;
-                word_counter                    <= word_counter + 11'd1; // will naturally wrap around
+                // w_packet_d                      <= packet;
+                // w_packet_valid                  <= 1'b1;
+                word_counter                    <= word_counter + 11'd4; // will naturally wrap around
             end else begin
-                w_packet_valid                  <= 1'b0;
+                // w_packet_valid                  <= 1'b0;
             end
         end
     end
@@ -70,9 +72,11 @@ module data_packager(
     // or increase bus width of bram
     bram_writer u_data_packet_mem_writer(
         .clk(clk),
-        .rst(rst),
-        .i_valid(w_packet_valid),
-        .i_data(w_packet_d[31:0]),
+        .arst_n(arst_n),
+        // .i_valid(w_packet_valid),
+        .i_valid(in_valid),
+        // .i_data(w_packet_d[31:0]),
+        .i_data(packet[31:0]),
         .i_bram_addr({21'd0, word_counter}),
         .o_bram_addr(o_data_packet_bram_addr),
         .o_bram_din(o_data_packet_bram_din),
