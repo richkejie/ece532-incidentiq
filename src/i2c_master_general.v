@@ -16,25 +16,34 @@ module i2c_master_general(
     output reg done, // goes high for one clock cycle when transaction is complete (ie. STOP condition generated) to indicate to rest of system that transaction is complete
 
     output wire scl, // I2C clock line (driven by master)
-    inout wire sda // I2C data line (bidirectional, driven by master or slave depending on phase of transaction
+    inout wire sda, // I2C data line (bidirectional, driven by master or slave depending on phase of transaction
+    output reg latch_start,
+    output reg [3:0] state,
+    output reg [3:0] bit_cnt // counter for bits being sent/received, counts down from 7 to 0 for each byte, exposed for waveform monitoring and debugging
 );
 
 //clock division - tbd relative to system clock frequency
 parameter CLK_DIV = 250;
 
-reg [$clog2(CLK_DIV)-1:0] clk_div_cnt;
+reg [$clog2(CLK_DIV+1)-1:0] clk_div_cnt;
 reg i2c_clk;
+// reg latch_start; // latched version of start signal to detect rising edge for starting transaction
 
 //Clock generation (i2c_clk will be scaled down relative to system clock based on CLK_DIV parameter
 always @(posedge clk or negedge reset_n) begin
     if (reset_n == 1'b0) begin
         clk_div_cnt <= 0;
         i2c_clk <= 1;
+        latch_start <= 0;
     end else if (clk_div_cnt == CLK_DIV) begin
         clk_div_cnt <= 0;
         i2c_clk <= ~i2c_clk;
     end else begin
         clk_div_cnt <= clk_div_cnt + 1;
+    end
+
+    if (start && !latch_start && !busy) begin
+        latch_start <= 1; // latch start signal to detect rising edge for starting transaction
     end
 end
 
@@ -45,9 +54,8 @@ reg sda_out, sda_output_en;
 assign sda = sda_output_en ? sda_out : 1'bz; 
 
 localparam IDLE = 0, START = 1, ADDR = 2, ACK_ADDR = 3, REG = 4, ACK_REG = 5, DATA = 6, ACK_DATA = 7, STOP = 8;
-reg [3:0] state;
 
-reg [3:0] bit_cnt; //counter for bits being sent/received, counts down from 7 to 0 for each byte
+// reg [3:0] bit_cnt; //counter for bits being sent/received, counts down from 7 to 0 for each byte
 reg [7:0] data_addr_reg; //reg for (slave addr + R/W bit) or (register address) to be shifted out during ADDR and REG states
 
 reg byte_index; //index for multi-byte transactions, 0 for first byte (or only byte if single byte transaction), 1 for second byte in multi-byte transaction
@@ -75,7 +83,8 @@ always @(posedge scl or negedge reset_n) begin
                 sda_out <= 1; // keep SDA high in IDLE state
 
                 // wait for start signal, then move to START state to generate start condition
-                if (start) begin
+                if (latch_start) begin
+                    latch_start <= 0; // clear latched start signal
                     busy <= 1;
                     state <= START;
                     //set up initial conditions for start of transaction
