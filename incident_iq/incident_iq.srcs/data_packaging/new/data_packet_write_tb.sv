@@ -15,6 +15,8 @@ module axi_vip_mst_tests();
     // address offsets --- check address editor
     localparam DATA_PACKET_BASE_ADDR        = 32'h0000_0000;
     localparam TB_TEST_ADDR                 = DATA_PACKET_BASE_ADDR + 4;
+    
+    integer i;
 
     initial begin
         // create and start agent
@@ -28,14 +30,18 @@ module axi_vip_mst_tests();
         agent.wait_drivers_idle();
         $display("%0t: [TB] Write Complete", $time);
 
-        // Test Case 1: Send a basic packet
-        $display("%0t: TC1: Sending Sample 1..., should write to address 32'h0000_0004", $time);
-        data_packet_write_tb.send_sample(16'hAAAA, 16'hBBBB, 16'hCCCC, 8'hDD, 8'hEE);
-
+        // Test Case 1: Send 8 packets in a row
+        $display("%0t: TC1: Sending8 packets in a row, should write to addresses 32'h0000_0004 :+ 8*4", $time);
+        for (i = 0; i < 8; i++) begin
+            data_packet_write_tb.send_sample(16'hAAAA, 16'hBBBB, 16'hCCCC, 8'hDD, 8'hEE);
+        end
+        
         repeat(10) @(posedge data_packet_write_tb.clk);
-        $display("%0t: [TB] Reading back from address 32'h0000_0004", $time);
-        read_bram(TB_TEST_ADDR, rd_data);
-        $display("%0t: [TB] rdata: %0x", $time, rd_data[0]);
+        $display("%0t: [TB] Reading back from addresses 32'h0000_0004 :+ 8*4", $time);
+        for (i = 0; i < 8; i++) begin
+            read_bram(TB_TEST_ADDR + i, rd_data);
+            $display("%0t: [TB] rdata: %0x", $time, rd_data[0]);
+        end
 
         // $display("%0t: [TB] Writing 32'd169 to address 32'h0000_0000", $time);
         // write_bram(TB_TEST_ADDR, 32'd169);
