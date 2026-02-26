@@ -19,6 +19,7 @@ module max_norm_3_axes #(
     assign sy = signed'(i_data_y);
     assign sz = signed'(i_data_z);
     
+    // get absolute value
     logic [DATA_MSB-1:0] abs_x, abs_y, abs_z;
     assign abs_x = sx[DATA_LEN-1] ? DATA_MSB'(-sx[DATA_MSB-1:0]) : sx[DATA_MSB-1:0];
     assign abs_y = sy[DATA_LEN-1] ? DATA_MSB'(-sy[DATA_MSB-1:0]) : sy[DATA_MSB-1:0];
