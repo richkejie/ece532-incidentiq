@@ -48,12 +48,22 @@ module top(
     data_packager u_data_packager(
         .clk                (CLK),
         .rst                (ARESET_N),
-        .in_valid           (),             // from u_sensor_polling
+        
+        .i_accel_valid      (spi0_output_valid),
+        .i_accel_z          (spi0_out_dataZ),
+        .i_accel_y          (spi0_out_dataY),
+        .i_accel_x          (spi0_out_dataX),
+        
         .i_gps              (),             // from u_sensor_polling
-        .i_accel            (),             // from u_sensor_polling
-        .i_gyro             (),             // from u_sensor_polling
+        
+        .i_gyro_valid       (spi1_output_valid),
+        .i_gyro_z           (spi1_out_dataZ),
+        .i_gyro_y           (spi1_out_dataY),
+        .i_gyro_x           (spi1_out_dataX),
+        
         .i_temp             (),             // from u_sensor_polling
         .i_delta            (),             // from u_sensor_polling
+        
         .o_packet           (w_data_packet),
         .o_packet_valid     (w_data_packet_valid),
         
@@ -61,7 +71,11 @@ module top(
         .o_data_packet_bram_addr(w_data_packet_bram_addr),
         .o_data_packet_bram_din(w_data_packet_bram_din),
         .o_data_packet_bram_we(w_data_packet_bram_we),
-        .o_data_packet_bram_en(w_data_packet_bram_en)
+        .o_data_packet_bram_en(w_data_packet_bram_en),
+        
+        // Crash Detection interface
+        .o_cd_accel_max     (cd_accel_max),
+        .o_cd_gyro_max      (cd_gyro_max)
     );
     
     // --- sensor polling ---
