@@ -92,8 +92,19 @@ module crash_detection #(
     
     // compute average values from running sum and history length
     logic [HISTORY_LEN-1:0] avg_accel, avg_gyro;
-    assign avg_accel = accel_running_sum >> $clog2(HISTORY_LEN);
-    assign avg_gyro = gyro_running_sum >> $clog2(HISTORY_LEN);
+    
+    // TIMING VIOLATION: make averages sequential logic
+//    assign avg_accel = accel_running_sum >> $clog2(HISTORY_LEN);
+//    assign avg_gyro = gyro_running_sum >> $clog2(HISTORY_LEN);
+    always_ff @(posedge clk or negedge arst_n) begin
+        if (~arst_n) begin
+            avg_accel           <= '0;
+            avg_gyro            <= '0;
+        end else begin
+            avg_accel           <= accel_running_sum >> $clog2(HISTORY_LEN);
+            avg_gyro            <= gyro_running_sum >> $clog2(HISTORY_LEN);
+        end
+    end
 
     // --------------- FSM ---------------
     typedef enum logic [1:0] {
