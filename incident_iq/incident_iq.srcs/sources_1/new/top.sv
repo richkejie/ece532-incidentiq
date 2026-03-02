@@ -138,8 +138,8 @@ module top(
         .i_gyro_y           (w_gyro_y),
         .i_gyro_x           (w_gyro_x),
         
-        .ireg_accel_threshold                   (),
-        .ireg_angular_speed_threshold           (),
+        .ireg_accel_threshold                   (32'd9800),     // units of micro Gs
+        .ireg_angular_speed_threshold           (32'd30),       // units of degrees per second
         
         .o_state            (w_cd_state),
         .o_non_fatal_intr   (w_non_fatal_crash_led),
