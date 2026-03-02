@@ -120,11 +120,10 @@ module crash_detection #(
         case(state)
             SAFE: begin
                 state_next = SAFE;
-                if (
-                    (avg_accel > ireg_accel_threshold) ||
-                    (avg_gyro > ireg_angular_speed_threshold)
-                ) begin
+                if (avg_accel > ireg_accel_threshold) begin
                     state_next = FATAL;
+                end else if (avg_gyro > ireg_angular_speed_threshold) begin
+                    state_next = NON_FATAL;
                 end
             end
             
