@@ -4,8 +4,6 @@ module top(
     input   logic           CLK,        // board clock crystal (100 MHZ?)
     input   logic           ARESET_N,    // reset button (async active low)
     
-    input  wire BTNC,       // button for your FSM1/FSM2 reset behavior (PollingModule
-    
     // SPI0 physical pins (on-board accelerometer)
     input  wire MISO_0,
     output wire MOSI_0,
@@ -24,16 +22,22 @@ module top(
     // LED outputs
     output  logic [1:0]     LED_CD_STATE,
     output  logic           LED_NON_FATAL_CRASH,
-    output  logic           LED_FATAL_CRASH
+    output  logic           LED_FATAL_CRASH,
+    output  logic           LED_POLLING_READY,
+    output  logic           LED_SENSORS_SAMPLED
     );
     
     // --- LEDS ---
     logic [1:0]     w_cd_state;
     logic           w_non_fatal_crash_led, w_fatal_crash_led;
+    logic           w_polling_ready;
+    logic           w_sensors_sampled;
     
     assign LED_CD_STATE         = w_cd_state;
     assign LED_NON_FATAL_CRASH  = w_non_fatal_crash_led;
     assign LED_FATAL_CRASH      = w_fatal_crash_led;
+    assign LED_POLLING_READY    = w_polling_ready;
+    assign LED_SENSORS_SAMPLED  = w_sensors_sampled;
     
     // --- internal wires ---
     wire spi0_output_valid;
@@ -77,12 +81,14 @@ module top(
         .spi1_out_dataY     (spi1_out_dataY),
         .spi1_out_dataX     (spi1_out_dataX),
         
-        .BTNC               (BTNC),
+        .BTNC               (w_data_recv),
         
         .uart_valid         (uart_valid),
         .out_sentence_captured  (out_sentence_captured),
         .gps_rx             (gps_rx)
     );
+    
+    assign w_polling_ready = spi0_output_valid & spi1_output_valid & uart_valid;
     
     // --- data packager ---
     data_packager u_data_packager(
@@ -120,6 +126,8 @@ module top(
         .o_cd_gyro_y        (w_gyro_y),
         .o_cd_gyro_x        (w_gyro_x)
     );
+    
+    assign w_sensors_sampled = w_packet_valid;
     
         // -- crash detection ---
     crash_detection u_crash_detection(
