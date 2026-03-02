@@ -156,5 +156,25 @@ module crash_detection #(
     assign o_state = state;
     assign o_non_fatal_intr = (state == NON_FATAL);
     assign o_fatal_intr = (state == FATAL);
+    
+    ila_0 u_ila(
+        clk,
+        o_non_fatal_intr,
+        o_fatal_intr,
+        o_state,
+        i_accel_z,
+        i_accel_y,
+        i_accel_x,
+        next_accel,
+        avg_accel,
+        i_gyro_z,
+        i_gyro_y,
+        i_gyro_x,
+        next_gyro,
+        avg_gyro,
+        ireg_accel_threshold,
+        ireg_angular_speed_threshold
+    );
+    
 
 endmodule

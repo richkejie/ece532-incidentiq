@@ -144,13 +144,29 @@ module top(
         .i_gyro_y           (w_gyro_y),
         .i_gyro_x           (w_gyro_x),
         
-        .ireg_accel_threshold                   (32'd9800),     // units of micro Gs
-        .ireg_angular_speed_threshold           (32'd30),       // units of degrees per second
+        .ireg_accel_threshold                   (32'd125),     // units of micro Gs, ~0.5G (range: +- 8G, 12 bit signed)
+        .ireg_angular_speed_threshold           (32'd8000),       // units of degrees per second, ~60dps (range: +- 250dps, 16bit signed)
         
         .o_state            (w_cd_state),
         .o_non_fatal_intr   (w_non_fatal_crash_led),
         .o_fatal_intr       (w_fatal_crash_led)
     );
+
+//    ila_0 u_ila_gyro(
+//        CLK,
+//        LED_NON_FATAL_CRASH,
+//        w_gyro_z,
+//        w_gyro_y,
+//        w_gyro_x
+//    );
+    
+//    ila_0 u_ila_accel(
+//        CLK,
+//        LED_FATAL_CRASH,
+//        w_accel_z,
+//        w_accel_y,
+//        w_accel_x
+//    );
 
     
 endmodule
