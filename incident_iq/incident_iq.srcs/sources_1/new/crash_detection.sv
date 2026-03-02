@@ -157,7 +157,7 @@ module crash_detection #(
     assign o_non_fatal_intr = (state == NON_FATAL);
     assign o_fatal_intr = (state == FATAL);
     
-    ila_0 u_ila(
+    ila_0 u_ila_cd(
         clk,
         o_non_fatal_intr,
         o_fatal_intr,

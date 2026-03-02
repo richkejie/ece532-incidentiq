@@ -11,7 +11,7 @@ module data_packager(
         
     // inputs from sensors
 //    input   logic [15:0]    i_gps,
-//    input   logic [1023:0]  i_gps_sentence,
+    input   logic [1023:0]  i_gps_sentence,
     
     // acceleration
     input   logic [15:0]    i_accel_z,          // spi0_out_dataZ
@@ -45,7 +45,7 @@ module data_packager(
     output  logic [15:0]    o_cd_gyro_x
     );
     
-    logic all_sensors_valid = i_accel_valid & i_gyro_valid;
+    logic all_sensors_valid = i_accel_valid & i_gyro_valid & i_gps_valid;
     logic in_valid;
     
     // --- handshake ---
@@ -122,4 +122,31 @@ module data_packager(
         .o_bram_we(o_data_packet_bram_we),
         .o_bram_en(o_data_packet_bram_en)
     );
+    
+    // --- GPS ---
+    logic [31:0] w_gps_utc_time;
+    logic [31:0] w_gps_latitude, w_gps_longitude;
+    logic w_gps_north, w_gps_east;
+    logic [31:0] w_gps_ground_speed;
+    nmea_field_extract u_gps_field_extract(
+        .clk(clk),
+        .sentence(i_gps_sentence),
+        .utc_time(w_gps_utc_time),
+        .latitude(w_gps_latitude),
+        .north(w_gps_north),
+        .longitude(w_gps_longitude),
+        .east(w_gps_east),
+        .ground_speed(w_gps_ground_speed)
+    );
+    
+    ila_1 u_ila_gps(
+        clk,
+        w_gps_utc_time,
+        w_gps_latitude,
+        w_gps_longitude,
+        w_gps_ground_speed,
+        w_gps_north,
+        w_gps_east
+    );
+    
 endmodule
