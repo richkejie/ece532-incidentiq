@@ -103,13 +103,21 @@ module nmea_field_extract #(
     end
     
     // on next clock populate field values
-    always_ff @(posedge clk) begin
-        utc_time     <= c_utc_time;
-        latitude     <= c_latitude;
-        north        <= c_north;
-        longitude    <= c_longitude;
-        east         <= c_east;
-        ground_speed <= c_ground_speed;
-    end
+//    always_ff @(posedge clk) begin
+//        utc_time     <= c_utc_time;
+//        latitude     <= c_latitude;
+//        north        <= c_north;
+//        longitude    <= c_longitude;
+//        east         <= c_east;
+//        ground_speed <= c_ground_speed;
+//    end
+
+    // simply passthrough?
+    assign utc_time = c_utc_time;
+    assign latitude = c_latitude;
+    assign north = c_north;
+    assign longitude = c_longitude;
+    assign east = c_east;
+    assign ground_speed = c_ground_speed;
 
 endmodule

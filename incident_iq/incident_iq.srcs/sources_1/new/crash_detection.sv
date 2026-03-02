@@ -9,9 +9,17 @@ module crash_detection #(
         input   logic           i_state_rst,
         
         input   logic           i_sensors_valid,
+        
         input   logic [15:0]    i_gps,
-        input   logic [15:0]    i_accel,
-        input   logic [15:0]    i_gyro,
+        
+        input   logic [15:0]    i_accel_z,
+        input   logic [15:0]    i_accel_y,
+        input   logic [15:0]    i_accel_x,
+        
+        input   logic [15:0]    i_gyro_z,
+        input   logic [15:0]    i_gyro_y,
+        input   logic [15:0]    i_gyro_x,
+        
         input   logic [15:0]    i_delta,
         
         // config registers
@@ -28,7 +36,39 @@ module crash_detection #(
     );
 
     // --------------- Sensor Data ---------------
+    
+    // compute max norm for acceleration
+    logic [11:0] accel_max_norm;
+    logic [15:0] next_accel;
+    
+    max_norm_3_axes #(
+        .DATA_LEN(16),
+        .DATA_MSB(12)
+    ) u_accel_max_norm (
+        .i_data_x(i_accel_x),
+        .i_data_y(i_accel_y),
+        .i_data_z(i_accel_z),
+        .o_data_max_norm(accel_max_norm)
+    );
+    assign next_accel = {4'b0, accel_max_norm};
+    
+    // compute max norm for gyro angular rate
+    logic [15:0] gyro_max_norm;
+    logic [15:0] next_gyro;
+    
+    max_norm_3_axes #(
+        .DATA_LEN(16),
+        .DATA_MSB(16)
+    ) u_gyro_max_norm (
+        .i_data_x(i_gyro_x),
+        .i_data_y(i_gyro_y),
+        .i_data_z(i_gyro_z),
+        .o_data_max_norm(gyro_max_norm)
+    );
+    assign next_gyro = gyro_max_norm;
+    
 
+    // shift registers to keep history
     logic [HISTORY_LEN:0][15:0] shift_gps;
     logic [HISTORY_LEN-1:0][15:0] shift_delta, shift_accel, shift_gyro;
     
@@ -45,12 +85,13 @@ module crash_detection #(
             shift_delta     <= '0;
         end else if (i_sensors_valid) begin
             shift_gps       <= {shift_gps[HISTORY_LEN-1:0],i_gps};
-            shift_accel     <= {shift_accel[HISTORY_LEN-1-1:0],i_accel};
-            shift_gyro      <= {shift_gyro[HISTORY_LEN-1-1:0],i_gyro};
+            shift_accel     <= {shift_accel[HISTORY_LEN-1-1:0],next_accel};
+            shift_gyro      <= {shift_gyro[HISTORY_LEN-1-1:0],next_gyro};
             shift_delta     <= {shift_delta[HISTORY_LEN-1-1:0],i_delta};
         end // otherwise keeps the same data
     end
     
+    // running sums of history
     // pure combinational add --- may not meet timing...
     logic [HISTORY_LEN-1+3:0] accel_running_sum, gyro_running_sum, delta_running_sum;
     
@@ -65,6 +106,7 @@ module crash_detection #(
         end
     end
     
+    // compute average values from running sum and history length
     logic [HISTORY_LEN-1:0] avg_accel, avg_gyro;
     assign avg_accel = accel_running_sum >> $clog2(HISTORY_LEN);
     assign avg_gyro = gyro_running_sum >> $clog2(HISTORY_LEN);
