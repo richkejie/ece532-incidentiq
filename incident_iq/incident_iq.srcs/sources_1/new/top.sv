@@ -138,8 +138,7 @@ module top(
         .i_gyro_y           (w_gyro_y),
         .i_gyro_x           (w_gyro_x),
         
-        .ireg_non_fatal_accel_threshold         (),
-        .ireg_fatal_accel_threshold             (),
+        .ireg_accel_threshold                   (),
         .ireg_angular_speed_threshold           (),
         
         .o_state            (w_cd_state),

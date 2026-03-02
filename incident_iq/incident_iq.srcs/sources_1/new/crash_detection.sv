@@ -19,8 +19,7 @@ module crash_detection #(
         input   logic [15:0]    i_gyro_x,
         
         // config registers
-        input   logic [31:0]    ireg_non_fatal_accel_threshold,
-        input   logic [31:0]    ireg_fatal_accel_threshold,
+        input   logic [31:0]    ireg_accel_threshold,
         input   logic [31:0]    ireg_angular_speed_threshold,
         
         output  logic [1:0]     o_state,
@@ -122,15 +121,10 @@ module crash_detection #(
             SAFE: begin
                 state_next = SAFE;
                 if (
-                    (avg_accel > ireg_fatal_accel_threshold) ||
+                    (avg_accel > ireg_accel_threshold) ||
                     (avg_gyro > ireg_angular_speed_threshold)
                 ) begin
                     state_next = FATAL;
-                end else if (
-                    (avg_accel > ireg_non_fatal_accel_threshold) ||
-                    (avg_gyro > ireg_angular_speed_threshold)
-                ) begin
-                    state_next = NON_FATAL;
                 end
             end
             
