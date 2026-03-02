@@ -9,6 +9,7 @@ module crash_detection #(
         input   logic           i_state_rst,
         
         input   logic           i_sensors_valid,
+        
         input   logic [15:0]    i_gps,
         
         input   logic [15:0]    i_accel_z,
@@ -61,7 +62,8 @@ module crash_detection #(
     ) u_gyro_max_norm (
         .i_data_x(i_gyro_x),
         .i_data_y(i_gyro_y),
-        .i_data_z(i_gyro_z)
+        .i_data_z(i_gyro_z),
+        .o_data_max_norm(gyro_max_norm)
     );
     assign next_gyro = gyro_max_norm;
     
