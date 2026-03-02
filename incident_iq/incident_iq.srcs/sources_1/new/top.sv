@@ -94,9 +94,7 @@ module top(
         .i_accel_y          (spi0_out_dataY),
         .i_accel_x          (spi0_out_dataX),
         
-//        .i_gps              (),             // from u_sensor_polling
         .i_gps_valid        (uart_valid),
-        .i_gps_sentence     (out_sentence_captured),
         
         .i_gyro_valid       (spi1_output_valid),
         .i_gyro_z           (spi1_out_dataZ),

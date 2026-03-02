@@ -11,7 +11,7 @@ module data_packager(
         
     // inputs from sensors
 //    input   logic [15:0]    i_gps,
-    input   logic [1023:0]  i_gps_sentence,
+//    input   logic [1023:0]  i_gps_sentence,
     
     // acceleration
     input   logic [15:0]    i_accel_z,          // spi0_out_dataZ
@@ -68,26 +68,6 @@ module data_packager(
             o_data_recv     <= 1'b0;
         end
     end
-    
-    // --- gps nmea field extract ---
-    logic   [31:0]          w_gps_utc_time;
-    logic   [31:0]          w_gps_latitude, w_gps_longitude;
-    logic                   w_gps_north, w_gps_east;
-    logic   [31:0]          w_gps_ground_speed;
-    
-    nmea_field_extract #(
-        .SENTENCE_BITS(1024)
-    ) u_gps_extract(
-        .clk            (clk),
-        .sentence       (i_gps_sentence),
-        .utc_time       (w_gps_utc_time),
-        .latitude       (w_gps_latitude),
-        .north          (w_gps_north),
-        .longitude      (w_gps_longitude),
-        .east           (w_gps_east),
-        .ground_speed   (w_gps_ground_speed)
-    );
-    
     
     // --- packet ---
     // not used for now...
