@@ -93,7 +93,7 @@ module top(
     // --- data packager ---
     data_packager u_data_packager(
         .clk                (CLK),
-        .rst                (ARESET_N),
+        .arst_n             (ARESET_N),
         
         .i_accel_valid      (spi0_output_valid),
         .i_accel_z          (spi0_out_dataZ),
