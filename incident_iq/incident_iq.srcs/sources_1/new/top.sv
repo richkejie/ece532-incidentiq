@@ -130,8 +130,6 @@ module top(
         .i_state_rst        (1'b0),                 // don't use this reset, since don't have microblaze stuff setup
         .i_sensors_valid    (w_packet_valid),
         
-        .i_gps              (),
-        
         .i_accel_z          (w_accel_z),
         .i_accel_y          (w_accel_y),
         .i_accel_x          (w_accel_x),
@@ -140,13 +138,8 @@ module top(
         .i_gyro_y           (w_gyro_y),
         .i_gyro_x           (w_gyro_x),
         
-        .i_delta            (),
-        
-        .ireg_speed_threshold                   (),
         .ireg_non_fatal_accel_threshold         (),
         .ireg_fatal_accel_threshold             (),
-        .ireg_angle_threshold                   (),
-        .ireg_angle_in_motion_threshold         (),
         .ireg_angular_speed_threshold           (),
         
         .o_state            (w_cd_state),
