@@ -11,7 +11,7 @@ module data_packager(
         
     // inputs from sensors
 //    input   logic [15:0]    i_gps,
-//    input   logic [1023:0]  i_gps_sentence,
+    input   logic [1023:0]  i_gps_sentence,
     
     // acceleration
     input   logic [15:0]    i_accel_z,          // spi0_out_dataZ
@@ -45,8 +45,10 @@ module data_packager(
     output  logic [15:0]    o_cd_gyro_x
     );
     
-    logic all_sensors_valid = i_accel_valid & i_gyro_valid;
+    logic all_sensors_valid = i_accel_valid & i_gyro_valid & i_gps_valid;
     logic in_valid;
+    
+    logic done_nmea_extract;
     
     // --- handshake ---
     always_ff @(posedge clk or negedge arst_n) begin
@@ -66,6 +68,19 @@ module data_packager(
             o_data_recv     <= 1'b1;
         end else begin
             o_data_recv     <= 1'b0;
+        end
+    end
+    
+    // --- extract nmea fields ---
+    logic start_nmea_extract;
+    
+    always_ff @(posedge clk or negedge arst_n) begin
+        if (~arst_n) begin
+            start_nmea_extract <= 1'b0;
+        end else if (in_valid) begin
+            start_nmea_extract <= 1'b1;
+        end else begin
+            start_nmea_extract <= 1'b0;
         end
     end
     
@@ -122,4 +137,43 @@ module data_packager(
         .o_bram_we(o_data_packet_bram_we),
         .o_bram_en(o_data_packet_bram_en)
     );
+    
+    // --- GPS ---
+    logic [31:0] w_gps_utc_time;
+    logic [31:0] w_gps_latitude, w_gps_longitude;
+    logic w_gps_north, w_gps_east;
+    logic [31:0] w_gps_ground_speed;
+    
+    logic busy;
+    nmea_field_extract u_gps_field_extract(
+        .clk(clk),
+        .rst_n(arst_n),
+        .start(start_nmea_extract),
+        .done(done_nmea_extract),
+        .busy(busy),
+        .sentence(i_gps_sentence),
+        .utc_time(w_gps_utc_time),
+        .latitude(w_gps_latitude),
+        .north(w_gps_north),
+        .longitude(w_gps_longitude),
+        .east(w_gps_east),
+        .ground_speed(w_gps_ground_speed)
+    );
+    
+    ila_1 u_ila_gps(
+        .clk(clk),
+        .probe0(w_gps_utc_time),
+        .probe1(w_gps_latitude),
+        .probe2(w_gps_longitude),
+        .probe3(w_gps_ground_speed),
+        .probe4(w_gps_north),
+        .probe5(w_gps_east),
+        .probe6(i_accel_z),
+        .probe7(i_accel_y),
+        .probe8(i_accel_x),
+        .probe9(i_gyro_z),
+        .probe10(i_gyro_y),
+        .probe11(i_gyro_x)
+    );
+    
 endmodule

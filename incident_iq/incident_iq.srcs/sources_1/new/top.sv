@@ -101,6 +101,7 @@ module top(
         .i_accel_x          (spi0_out_dataX),
         
         .i_gps_valid        (uart_valid),
+        .i_gps_sentence     (out_sentence_captured),
         
         .i_gyro_valid       (spi1_output_valid),
         .i_gyro_z           (spi1_out_dataZ),
@@ -151,22 +152,6 @@ module top(
         .o_non_fatal_intr   (w_non_fatal_crash_led),
         .o_fatal_intr       (w_fatal_crash_led)
     );
-
-//    ila_0 u_ila_gyro(
-//        CLK,
-//        LED_NON_FATAL_CRASH,
-//        w_gyro_z,
-//        w_gyro_y,
-//        w_gyro_x
-//    );
-    
-//    ila_0 u_ila_accel(
-//        CLK,
-//        LED_FATAL_CRASH,
-//        w_accel_z,
-//        w_accel_y,
-//        w_accel_x
-//    );
 
     
 endmodule
