@@ -48,6 +48,8 @@ module data_packager(
     logic all_sensors_valid = i_accel_valid & i_gyro_valid & i_gps_valid;
     logic in_valid;
     
+    logic done_nmea_extract;
+    
     // --- handshake ---
     always_ff @(posedge clk or negedge arst_n) begin
         if (~arst_n) begin
@@ -66,6 +68,19 @@ module data_packager(
             o_data_recv     <= 1'b1;
         end else begin
             o_data_recv     <= 1'b0;
+        end
+    end
+    
+    // --- extract nmea fields ---
+    logic start_nmea_extract;
+    
+    always_ff @(posedge clk or negedge arst_n) begin
+        if (~arst_n) begin
+            start_nmea_extract <= 1'b0;
+        end else if (in_valid) begin
+            start_nmea_extract <= 1'b1;
+        end else begin
+            start_nmea_extract <= 1'b0;
         end
     end
     
@@ -128,8 +143,14 @@ module data_packager(
     logic [31:0] w_gps_latitude, w_gps_longitude;
     logic w_gps_north, w_gps_east;
     logic [31:0] w_gps_ground_speed;
+    
+    logic busy;
     nmea_field_extract u_gps_field_extract(
         .clk(clk),
+        .rst_n(arst_n),
+        .start(start_nmea_extract),
+        .done(done_nmea_extract),
+        .busy(busy),
         .sentence(i_gps_sentence),
         .utc_time(w_gps_utc_time),
         .latitude(w_gps_latitude),
@@ -140,13 +161,19 @@ module data_packager(
     );
     
     ila_1 u_ila_gps(
-        clk,
-        w_gps_utc_time,
-        w_gps_latitude,
-        w_gps_longitude,
-        w_gps_ground_speed,
-        w_gps_north,
-        w_gps_east
+        .clk(clk),
+        .probe0(w_gps_utc_time),
+        .probe1(w_gps_latitude),
+        .probe2(w_gps_longitude),
+        .probe3(w_gps_ground_speed),
+        .probe4(w_gps_north),
+        .probe5(w_gps_east),
+        .probe6(i_accel_z),
+        .probe7(i_accel_y),
+        .probe8(i_accel_x),
+        .probe9(i_gyro_z),
+        .probe10(i_gyro_y),
+        .probe11(i_gyro_x)
     );
     
 endmodule
