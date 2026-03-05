@@ -317,9 +317,6 @@ module data_packager #(
         end
     end
     
-    // for now, simply write lower 32 bits
-    // later will pipeline the packet to write
-    // or increase bus width of bram
     bram_writer u_data_packet_mem_writer(
         .clk(clk),
         .arst_n(arst_n),
