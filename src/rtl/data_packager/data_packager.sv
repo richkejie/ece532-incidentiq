@@ -48,7 +48,8 @@ module data_packager #(
     output  logic [15:0]    o_cd_accel_x,
     output  logic [15:0]    o_cd_gyro_z,
     output  logic [15:0]    o_cd_gyro_y,
-    output  logic [15:0]    o_cd_gyro_x
+    output  logic [15:0]    o_cd_gyro_x,
+    output  logic [31:0]    o_cd_gps_ground_speed
     );
     
     logic all_sensors_valid = i_accel_valid & i_gyro_valid & i_gps_valid;
@@ -258,6 +259,7 @@ module data_packager #(
     assign o_cd_gyro_z = w_gyro_z_d;
     assign o_cd_gyro_y = w_gyro_y_d;
     assign o_cd_gyro_x = w_gyro_x_d;
+    assign o_cd_gps_ground_speed = w_gps_ground_speed_d;
     
     // --- BRAM write ---
     // data_packet_mem is 8K, can store 2048 32-bit words

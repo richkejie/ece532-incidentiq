@@ -50,6 +50,7 @@ module top(
     logic           w_data_recv;
     logic [15:0]    w_accel_z, w_accel_y, w_accel_x;
     logic [15:0]    w_gyro_z, w_gyro_y, w_gyro_x;
+    logic [31:0]    w_gps_ground_speed;
     
     logic M_AXI_registers_s_axil_awready;
     logic M_AXI_registers_s_axil_awvalid;
@@ -73,6 +74,12 @@ module top(
 
     registers_pkg::registers__in_t whwif_in;
     registers_pkg::registers__out_t whwif_out;
+
+    logic [31:0] w_data_packet_bram_addr;
+    logic [31:0] w_data_packet_bram_din;
+    logic [3:0] w_data_packet_bram_we;
+    logic w_data_packet_bram_en;
+
 
     // --- register file ---
     registers u_reg_file(
@@ -125,14 +132,14 @@ module top(
         .M_AXI_registers_wready(M_AXI_registers_s_axil_wready),
         .M_AXI_registers_wstrb(M_AXI_registers_s_axil_wstrb),
         .M_AXI_registers_wvalid(M_AXI_registers_s_axil_wvalid),
-        .crash_interrupt_in(),
-        .data_packet_bram_port_addr(),
-        .data_packet_bram_port_clk(),
-        .data_packet_bram_port_din(),
-        .data_packet_bram_port_dout(),
-        .data_packet_bram_port_en(),
-        .data_packet_bram_port_rst(),
-        .data_packet_bram_port_we()
+        .crash_interrupt_in(),  // TODO
+        .data_packet_bram_port_addr(w_data_packet_bram_addr),
+        .data_packet_bram_port_clk(system_top_clk_out1),
+        .data_packet_bram_port_din(w_data_packet_bram_din),
+        .data_packet_bram_port_dout(), // unconnected, data packager does not need to read from the buffer
+        .data_packet_bram_port_en(w_data_packet_bram_en),
+        .data_packet_bram_port_rst(ARESET_N),
+        .data_packet_bram_port_we(w_data_packet_bram_we)
     );
 
     // --- sensor polling ---
@@ -190,11 +197,11 @@ module top(
         .o_packet           (), // not needed right now
         .o_packet_valid     (w_packet_valid),
         
-        // BRAM interface --- don't connect to microblaze stuff for now
-        .o_data_packet_bram_addr(),
-        .o_data_packet_bram_din(),
-        .o_data_packet_bram_we(),
-        .o_data_packet_bram_en(),
+        // BRAM interface
+        .o_data_packet_bram_addr(w_data_packet_bram_addr),
+        .o_data_packet_bram_din(w_data_packet_bram_din),
+        .o_data_packet_bram_we(w_data_packet_bram_we),
+        .o_data_packet_bram_en(w_data_packet_bram_en),
 
         .o_data_packet_bram_write_ptr(whwif_in.WRITE_PTR.WPTR.next),
         .o_data_packet_bram_status_empty(whwif_in.STATUS.EMPTY.next),
@@ -207,17 +214,18 @@ module top(
         .o_cd_accel_x       (w_accel_x),
         .o_cd_gyro_z        (w_gyro_z),
         .o_cd_gyro_y        (w_gyro_y),
-        .o_cd_gyro_x        (w_gyro_x)
+        .o_cd_gyro_x        (w_gyro_x),
+        .o_cd_gps_ground_speed(w_gps_ground_speed)
     );
     
-        // -- crash detection ---
+    // -- crash detection ---
     crash_detection u_crash_detection(
         .clk                (system_top_clk_out1),
         .arst_n             (ARESET_N),
-        .i_state_rst        (1'b0),                 // don't use this reset, since don't have microblaze stuff setup
+        .i_state_rst        (1'b0),                 // TODO don't use this reset, since don't have microblaze stuff setup
         .i_sensors_valid    (w_packet_valid),
         
-        .i_gps              (),
+        .i_gps_ground_speed (w_gps_ground_speed),
         
         .i_accel_z          (w_accel_z),
         .i_accel_y          (w_accel_y),
@@ -226,8 +234,6 @@ module top(
         .i_gyro_z           (w_gyro_z),
         .i_gyro_y           (w_gyro_y),
         .i_gyro_x           (w_gyro_x),
-        
-        .i_delta            (),
         
         .ireg_speed_threshold                   (),
         .ireg_non_fatal_accel_threshold         (),
