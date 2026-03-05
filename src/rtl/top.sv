@@ -238,7 +238,7 @@ module top(
         .ireg_speed_threshold                   (whwif_out.CD_SPEED_THRESH.THRESH.value),
         .ireg_non_fatal_accel_threshold         (whwif_out.CD_NON_FATAL_ACCEL_THRESH.THRESH.value),
         .ireg_fatal_accel_threshold             (whwif_out.CD_FATAL_ACCEL_THRESH.THRESH.value),
-        .ireg_angular_speed_threshold           (whwif_out.CD_ANGULAR_SPEED.THRESH.value),
+        .ireg_angular_speed_threshold           (whwif_out.CD_ANGULAR_SPEED_THRESH.THRESH.value),
         
         .o_state            (w_cd_state),
         .o_non_fatal_intr   (w_non_fatal_crash_led),
