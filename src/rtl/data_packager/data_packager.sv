@@ -36,6 +36,11 @@ module data_packager #(
     output  logic [31:0]    o_data_packet_bram_din,
     output  logic [3:0]     o_data_packet_bram_we,
     output  logic           o_data_packet_bram_en,
+
+    output  logic [10:0]    o_data_packet_bram_write_ptr,
+    output  logic           o_data_packet_bram_status_empty,
+    output  logic           o_data_packet_bram_status_full,
+    input   logic [10:0]    i_data_packet_bram_read_ptr,
     
     // interface to crash detection
     output  logic [15:0]    o_cd_accel_z,

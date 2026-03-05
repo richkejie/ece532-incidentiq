@@ -49,6 +49,88 @@ module top(
     logic [15:0]    w_accel_z, w_accel_y, w_accel_x;
     logic [15:0]    w_gyro_z, w_gyro_y, w_gyro_x;
     
+    logic M_AXI_registers_s_axil_awready;
+    logic M_AXI_registers_s_axil_awvalid;
+    logic [3:0] M_AXI_registers_s_axil_awaddr;
+    logic [2:0] M_AXI_registers_s_axil_awprot;
+    logic M_AXI_registers_s_axil_wready;
+    logic M_AXI_registers_s_axil_wvalid;
+    logic [31:0] M_AXI_registers_s_axil_wdata;
+    logic [3:0] M_AXI_registers_s_axil_wstrb;
+    logic M_AXI_registers_s_axil_bready;
+    logic M_AXI_registers_s_axil_bvalid;
+    logic [1:0] M_AXI_registers_s_axil_bresp;
+    logic M_AXI_registers_s_axil_arready;
+    logic M_AXI_registers_s_axil_arvalid;
+    logic [3:0] M_AXI_registers_s_axil_araddr;
+    logic [2:0] M_AXI_registers_s_axil_arprot;
+    logic M_AXI_registers_s_axil_rready;
+    logic M_AXI_registers_s_axil_rvalid;
+    logic [31:0] M_AXI_registers_s_axil_rdata;
+    logic [1:0] M_AXI_registers_s_axil_rresp;
+
+    registers_pkg::registers__in_t whwif_in;
+    registers_pkg::registers__out_t whwif_out;
+
+    // --- register file ---
+    registers u_reg_file(
+        .clk(CLK),
+        .arst_n(ARESET_N),
+        .s_axil_awready(M_AXI_registers_s_axil_awready),
+        .s_axil_awvalid(M_AXI_registers_s_axil_awvalid),
+        .s_axil_awaddr(M_AXI_registers_s_axil_awaddr),
+        .s_axil_awprot(M_AXI_registers_s_axil_awprot),
+        .s_axil_wready(M_AXI_registers_s_axil_wready),
+        .s_axil_wvalid(M_AXI_registers_s_axil_wvalid),
+        .s_axil_wdata(M_AXI_registers_s_axil_wdata),
+        .s_axil_wstrb(M_AXI_registers_s_axil_wstrb),
+        .s_axil_bready(M_AXI_registers_s_axil_bready),
+        .s_axil_bvalid(M_AXI_registers_s_axil_bvalid),
+        .s_axil_bresp(M_AXI_registers_s_axil_bresp),
+        .s_axil_arready(M_AXI_registers_s_axil_arready),
+        .s_axil_arvalid(M_AXI_registers_s_axil_arvalid),
+        .s_axil_araddr(M_AXI_registers_s_axil_araddr),
+        .s_axil_arprot(M_AXI_registers_s_axil_arprot),
+        .s_axil_rready(M_AXI_registers_s_axil_rready),
+        .s_axil_rvalid(M_AXI_registers_s_axil_rvalid),
+        .s_axil_rdata(M_AXI_registers_s_axil_rdata),
+        .s_axil_rresp(M_AXI_registers_s_axil_rresp),
+        .hwif_in(whwif_in),
+        .hwif_out(whwif_out)
+    );
+
+    // --- system top ---
+    system_top_wrapper u_system_top(
+        .sys_clock(CLK),
+        .cpu_reset_n(ARESET_N),
+        .M_AXI_registers_araddr(M_AXI_registers_s_axil_araddr),
+        .M_AXI_registers_arprot(M_AXI_registers_s_axil_arprot),
+        .M_AXI_registers_arready(M_AXI_registers_s_axil_arready),
+        .M_AXI_registers_arvalid(M_AXI_registers_s_axil_arvalid),
+        .M_AXI_registers_awaddr(M_AXI_registers_s_axil_awaddr),
+        .M_AXI_registers_awprot(M_AXI_registers_s_axil_awprot),
+        .M_AXI_registers_awready(M_AXI_registers_s_axil_awready),
+        .M_AXI_registers_awvalid(M_AXI_registers_s_axil_awvalid),
+        .M_AXI_registers_bready(M_AXI_registers_s_axil_bready),
+        .M_AXI_registers_bresp(M_AXI_registers_s_axil_bresp),
+        .M_AXI_registers_bvalid(M_AXI_registers_s_axil_bvalid),
+        .M_AXI_registers_rdata(M_AXI_registers_s_axil_rdata),
+        .M_AXI_registers_rready(M_AXI_registers_s_axil_rready),
+        .M_AXI_registers_rresp(M_AXI_registers_s_axil_rresp),
+        .M_AXI_registers_rvalid(M_AXI_registers_s_axil_rvalid),
+        .M_AXI_registers_wdata(M_AXI_registers_s_axil_wdata),
+        .M_AXI_registers_wready(M_AXI_registers_s_axil_wready),
+        .M_AXI_registers_wstrb(M_AXI_registers_s_axil_wstrb),
+        .M_AXI_registers_wvalid(M_AXI_registers_s_axil_wvalid),
+        .crash_interrupt_in(),
+        .data_packet_bram_port_addr(),
+        .data_packet_bram_port_clk(),
+        .data_packet_bram_port_din(),
+        .data_packet_bram_port_dout(),
+        .data_packet_bram_port_en(),
+        .data_packet_bram_port_rst(),
+        .data_packet_bram_port_we()
+    );
 
     // --- sensor polling ---
     PollingModule u_sensor_polling(
@@ -66,8 +148,6 @@ module top(
         .MOSI_1             (MOSI_1),
         .MISO_1             (MISO_1),
         .SCK_1              (SCK_1),
-        
-//        .DATA_RECV          (w_data_recv),             // ? 
         
         .spi0_out_dataZ     (spi0_out_dataZ),
         .spi0_out_dataY     (spi0_out_dataY),
@@ -87,14 +167,13 @@ module top(
     // --- data packager ---
     data_packager u_data_packager(
         .clk                (CLK),
-        .rst                (ARESET_N),
+        .arst_n             (ARESET_N),
         
         .i_accel_valid      (spi0_output_valid),
         .i_accel_z          (spi0_out_dataZ),
         .i_accel_y          (spi0_out_dataY),
         .i_accel_x          (spi0_out_dataX),
         
-//        .i_gps              (),             // from u_sensor_polling
         .i_gps_valid        (uart_valid),
         .i_gps_sentence     (out_sentence_captured),
         
@@ -113,6 +192,11 @@ module top(
         .o_data_packet_bram_din(),
         .o_data_packet_bram_we(),
         .o_data_packet_bram_en(),
+
+        .o_data_packet_bram_write_ptr(whwif_in.WRITE_PTR.WPTR.next),
+        .o_data_packet_bram_status_empty(whwif_in.STATUS.EMPTY.next),
+        .o_data_packet_bram_status_full(whwif_in.STATUS.FULL.next),
+        .i_data_packet_bram_read_ptr(whwif_out.READ_PTR.RPTR.value),
         
         // crash detection interface
         .o_cd_accel_z       (w_accel_z),
