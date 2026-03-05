@@ -48,6 +48,7 @@ unisims
 vivado.cache/
 vivado.hw/
 vivado.ip_user_files/
+*.ip_user_files/
 vivado.runs/
 vivado.sim/
 
@@ -58,16 +59,22 @@ fsm_encoding.os
 tab_*/
 webtalk.*
 vivado_pid*.str
+*.str
 hs_err_pid*
 xelab.*
 xsim.*
 xvlog.*
 *.cache
+*.cache/
 *.sim
+*.sim/
 *.runs
+*.runs/
 *.hw
+*.hw/
 *.backup.*
 *.debug
 
 ## checkpoint files
 *.dcp
+

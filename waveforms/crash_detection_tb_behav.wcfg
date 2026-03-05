@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="crash_detection_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="crash_detection_tb" />
+            <top_module name="glbl" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="1135000001fs"></ZoomEndTime>
+      <Cursor1Time time="975000000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="258"></NameColumnWidth>
+      <ValueColumnWidth column_width="157"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="28" />
+   <wvobject fp_name="/crash_detection_tb/clk" type="logic">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/i_state_rst" type="logic">
+      <obj_property name="ElementShortName">i_state_rst</obj_property>
+      <obj_property name="ObjectShortName">i_state_rst</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/i_sensors_valid" type="logic">
+      <obj_property name="ElementShortName">i_sensors_valid</obj_property>
+      <obj_property name="ObjectShortName">i_sensors_valid</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/i_gps" type="array">
+      <obj_property name="ElementShortName">i_gps[15:0]</obj_property>
+      <obj_property name="ObjectShortName">i_gps[15:0]</obj_property>
+      <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/i_accel" type="array">
+      <obj_property name="ElementShortName">i_accel[15:0]</obj_property>
+      <obj_property name="ObjectShortName">i_accel[15:0]</obj_property>
+      <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/i_gyro" type="array">
+      <obj_property name="ElementShortName">i_gyro[15:0]</obj_property>
+      <obj_property name="ObjectShortName">i_gyro[15:0]</obj_property>
+      <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/i_delta" type="array">
+      <obj_property name="ElementShortName">i_delta[15:0]</obj_property>
+      <obj_property name="ObjectShortName">i_delta[15:0]</obj_property>
+      <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/ireg_speed_threshold" type="array">
+      <obj_property name="ElementShortName">ireg_speed_threshold[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ireg_speed_threshold[31:0]</obj_property>
+      <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/ireg_non_fatal_accel_threshold" type="array">
+      <obj_property name="ElementShortName">ireg_non_fatal_accel_threshold[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ireg_non_fatal_accel_threshold[31:0]</obj_property>
+      <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/ireg_fatal_accel_threshold" type="array">
+      <obj_property name="ElementShortName">ireg_fatal_accel_threshold[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ireg_fatal_accel_threshold[31:0]</obj_property>
+      <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/ireg_angle_threshold" type="array">
+      <obj_property name="ElementShortName">ireg_angle_threshold[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ireg_angle_threshold[31:0]</obj_property>
+      <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/o_state" type="array">
+      <obj_property name="ElementShortName">o_state[1:0]</obj_property>
+      <obj_property name="ObjectShortName">o_state[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/o_non_fatal_intr" type="logic">
+      <obj_property name="ElementShortName">o_non_fatal_intr</obj_property>
+      <obj_property name="ObjectShortName">o_non_fatal_intr</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/o_fatal_intr" type="logic">
+      <obj_property name="ElementShortName">o_fatal_intr</obj_property>
+      <obj_property name="ObjectShortName">o_fatal_intr</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/dut/shift_gps" type="array">
+      <obj_property name="ElementShortName">shift_gps[16:0][15:0]</obj_property>
+      <obj_property name="ObjectShortName">shift_gps[16:0][15:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[16]" type="array">
+         <obj_property name="ElementShortName">[16][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[16][15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[15]" type="array">
+         <obj_property name="ElementShortName">[15][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[15][15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[14]" type="array">
+         <obj_property name="ElementShortName">[14][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[14][15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[13]" type="array">
+         <obj_property name="ElementShortName">[13][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[13][15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[12]" type="array">
+         <obj_property name="ElementShortName">[12][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[12][15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[11]" type="array">
+         <obj_property name="ElementShortName">[11][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[11][15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[10]" type="array">
+         <obj_property name="ElementShortName">[10][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[10][15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[9]" type="array">
+         <obj_property name="ElementShortName">[9][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[9][15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[8]" type="array">
+         <obj_property name="ElementShortName">[8][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[8][15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[7]" type="array">
+         <obj_property name="ElementShortName">[7][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[7][15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[6]" type="array">
+         <obj_property name="ElementShortName">[6][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[6][15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[5]" type="array">
+         <obj_property name="ElementShortName">[5][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[5][15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[4]" type="array">
+         <obj_property name="ElementShortName">[4][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[4][15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[3]" type="array">
+         <obj_property name="ElementShortName">[3][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[3][15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[2]" type="array">
+         <obj_property name="ElementShortName">[2][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[2][15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[1]" type="array">
+         <obj_property name="ElementShortName">[1][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[1][15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[0]" type="array">
+         <obj_property name="ElementShortName">[0][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[16]" type="array">
+         <obj_property name="ElementShortName">[16][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[16][15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[15]" type="array">
+         <obj_property name="ElementShortName">[15][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[15][15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[14]" type="array">
+         <obj_property name="ElementShortName">[14][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[14][15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[13]" type="array">
+         <obj_property name="ElementShortName">[13][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[13][15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[12]" type="array">
+         <obj_property name="ElementShortName">[12][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[12][15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[11]" type="array">
+         <obj_property name="ElementShortName">[11][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[11][15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[10]" type="array">
+         <obj_property name="ElementShortName">[10][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[10][15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[9]" type="array">
+         <obj_property name="ElementShortName">[9][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[9][15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[8]" type="array">
+         <obj_property name="ElementShortName">[8][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[8][15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[7]" type="array">
+         <obj_property name="ElementShortName">[7][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[7][15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[6]" type="array">
+         <obj_property name="ElementShortName">[6][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[6][15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[5]" type="array">
+         <obj_property name="ElementShortName">[5][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[5][15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[4]" type="array">
+         <obj_property name="ElementShortName">[4][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[4][15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[3]" type="array">
+         <obj_property name="ElementShortName">[3][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[3][15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[2]" type="array">
+         <obj_property name="ElementShortName">[2][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[2][15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[1]" type="array">
+         <obj_property name="ElementShortName">[1][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[1][15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/crash_detection_tb/dut/shift_gps[0]" type="array">
+         <obj_property name="ElementShortName">[0][15:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][15:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/dut/shift_delta" type="array">
+      <obj_property name="ElementShortName">shift_delta[15:0][15:0]</obj_property>
+      <obj_property name="ObjectShortName">shift_delta[15:0][15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/dut/shift_accel" type="array">
+      <obj_property name="ElementShortName">shift_accel[15:0][15:0]</obj_property>
+      <obj_property name="ObjectShortName">shift_accel[15:0][15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/dut/shift_gyro" type="array">
+      <obj_property name="ElementShortName">shift_gyro[15:0][15:0]</obj_property>
+      <obj_property name="ObjectShortName">shift_gyro[15:0][15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/dut/accel_running_sum" type="array">
+      <obj_property name="ElementShortName">accel_running_sum[18:0]</obj_property>
+      <obj_property name="ObjectShortName">accel_running_sum[18:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/dut/gyro_running_sum" type="array">
+      <obj_property name="ElementShortName">gyro_running_sum[18:0]</obj_property>
+      <obj_property name="ObjectShortName">gyro_running_sum[18:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/dut/delta_running_sum" type="array">
+      <obj_property name="ElementShortName">delta_running_sum[18:0]</obj_property>
+      <obj_property name="ObjectShortName">delta_running_sum[18:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/dut/avg_accel" type="array">
+      <obj_property name="ElementShortName">avg_accel[15:0]</obj_property>
+      <obj_property name="ObjectShortName">avg_accel[15:0]</obj_property>
+      <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/dut/avg_gyro" type="array">
+      <obj_property name="ElementShortName">avg_gyro[15:0]</obj_property>
+      <obj_property name="ObjectShortName">avg_gyro[15:0]</obj_property>
+      <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/dut/inst_speeds" type="array">
+      <obj_property name="ElementShortName">inst_speeds[15:0][15:0]</obj_property>
+      <obj_property name="ObjectShortName">inst_speeds[15:0][15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/dut/speed_running_sum" type="array">
+      <obj_property name="ElementShortName">speed_running_sum[18:0]</obj_property>
+      <obj_property name="ObjectShortName">speed_running_sum[18:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/dut/avg_speed" type="array">
+      <obj_property name="ElementShortName">avg_speed[15:0]</obj_property>
+      <obj_property name="ObjectShortName">avg_speed[15:0]</obj_property>
+      <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/dut/state" type="array">
+      <obj_property name="ElementShortName">state[1:0]</obj_property>
+      <obj_property name="ObjectShortName">state[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/crash_detection_tb/dut/state_next" type="array">
+      <obj_property name="ElementShortName">state_next[1:0]</obj_property>
+      <obj_property name="ObjectShortName">state_next[1:0]</obj_property>
+   </wvobject>
+</wave_config>

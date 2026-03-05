@@ -1,0 +1,13 @@
+sv xil_defaultlib --include "../../../../incident_iq.srcs/data_packaging/bd/verif_data_packet_write/ipshared/ec67/hdl" --include "../../../../incident_iq.srcs/data_packaging/bd/verif_data_packet_write/ipshared/85a3" \
+"../../../bd/verif_data_packet_write/ip/verif_data_packet_write_axi_vip_0_0/sim/verif_data_packet_write_axi_vip_0_0_pkg.sv" \
+"../../../bd/verif_data_packet_write/ip/verif_data_packet_write_axi_vip_0_0/sim/verif_data_packet_write_axi_vip_0_0.sv" \
+
+verilog xil_defaultlib --include "../../../../incident_iq.srcs/data_packaging/bd/verif_data_packet_write/ipshared/ec67/hdl" --include "../../../../incident_iq.srcs/data_packaging/bd/verif_data_packet_write/ipshared/85a3" \
+"../../../bd/verif_data_packet_write/ip/verif_data_packet_write_blk_mem_gen_0_0/sim/verif_data_packet_write_blk_mem_gen_0_0.v" \
+"../../../bd/verif_data_packet_write/ip/verif_data_packet_write_clk_wiz_0/verif_data_packet_write_clk_wiz_0_clk_wiz.v" \
+"../../../bd/verif_data_packet_write/ip/verif_data_packet_write_clk_wiz_0/verif_data_packet_write_clk_wiz_0.v" \
+"../../../bd/verif_data_packet_write/sim/verif_data_packet_write.v" \
+
+verilog xil_defaultlib "glbl.v"
+
+nosort
