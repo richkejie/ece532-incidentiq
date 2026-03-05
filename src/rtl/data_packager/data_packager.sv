@@ -65,7 +65,8 @@ module data_packager #(
         START_SAMPLING      = 3'b001,
         SAMPLING            = 3'b010,
         DONE                = 3'b011,
-        WRITING_TO_BUFFER   = 3'b100
+        WRITING_TO_BUFFER   = 3'b100,
+        COMPLETE            = 3'b101
     } data_packager_state_t;
     
     data_packager_state_t state, state_next;
@@ -102,8 +103,11 @@ module data_packager #(
             WRITING_TO_BUFFER: begin
                 state_next = WRITING_TO_BUFFER;
                 if (buffer_write_done) begin
-                    state_next = IDLE;
+                    state_next = COMPLETE;
                 end
+            end
+            COMPLETE: begin
+                state_next = IDLE;
             end
             default: state_next = IDLE;
         endcase
@@ -113,7 +117,7 @@ module data_packager #(
     always_ff @(posedge clk or negedge arst_n) begin
         if (~arst_n) begin
             o_data_recv     <= 1'b0;
-        end else if (state == DONE) begin
+        end else if (state == COMPLETE) begin
             o_data_recv     <= 1'b1;
         end else begin
             o_data_recv     <= 1'b0;
