@@ -303,7 +303,7 @@ module data_packager #(
             buffer_write_ptr        <= '0;
             bram_write_data         <= '0;
             packet_idx              <= '0;
-        end else if (buffer_write_started) begin
+        end else if (buffer_write_started & buffer_ready) begin
             buffer_write_en         <= 1'b1;
             buffer_write_ptr        <= buffer_next_write_ptr;
             bram_write_data         <= packet[(packet_idx*32) +: 32];
