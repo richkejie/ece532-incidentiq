@@ -27,6 +27,8 @@ module top(
     output  logic           LED_FATAL_CRASH
     );
     
+    logic system_top_clk_out1;
+
     // --- LEDS ---
     logic [1:0]     w_cd_state;
     logic           w_non_fatal_crash_led, w_fatal_crash_led;
@@ -74,7 +76,7 @@ module top(
 
     // --- register file ---
     registers u_reg_file(
-        .clk(CLK),
+        .clk(system_top_clk_out1),
         .arst_n(ARESET_N),
         .s_axil_awready(M_AXI_registers_s_axil_awready),
         .s_axil_awvalid(M_AXI_registers_s_axil_awvalid),
@@ -103,6 +105,7 @@ module top(
     system_top_wrapper u_system_top(
         .sys_clock(CLK),
         .cpu_reset_n(ARESET_N),
+        .clk_out1(system_top_clk_out1),
         .M_AXI_registers_araddr(M_AXI_registers_s_axil_araddr),
         .M_AXI_registers_arprot(M_AXI_registers_s_axil_arprot),
         .M_AXI_registers_arready(M_AXI_registers_s_axil_arready),
@@ -134,7 +137,7 @@ module top(
 
     // --- sensor polling ---
     PollingModule u_sensor_polling(
-        .clk                (CLK),
+        .clk                (system_top_clk_out1),
         .reset_top          (~ARESET_N),          // should change to async active low (is currently sync active high)
         
         .spi0_output_valid  (spi0_output_valid),
@@ -166,7 +169,7 @@ module top(
     
     // --- data packager ---
     data_packager u_data_packager(
-        .clk                (CLK),
+        .clk                (system_top_clk_out1),
         .arst_n             (ARESET_N),
         
         .i_accel_valid      (spi0_output_valid),
@@ -209,7 +212,7 @@ module top(
     
         // -- crash detection ---
     crash_detection u_crash_detection(
-        .clk                (CLK),
+        .clk                (system_top_clk_out1),
         .arst_n             (ARESET_N),
         .i_state_rst        (1'b0),                 // don't use this reset, since don't have microblaze stuff setup
         .i_sensors_valid    (w_packet_valid),

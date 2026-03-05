@@ -56,7 +56,7 @@ module data_packager #(
     logic accel_done_sampling, gyro_done_sampling, gps_done_sampling;
     logic all_sensors_done_sampling = accel_done_sampling & gyro_done_sampling & gps_done_sampling;
 
-    logic bram_buffer_write_done;
+    logic buffer_write_done;
 
     // --- FSM ---
     typedef enum logic [2:0] {
@@ -100,7 +100,7 @@ module data_packager #(
             end
             WRITING_TO_BUFFER: begin
                 state_next = WRITING_TO_BUFFER;
-                if (bram_buffer_write_done) begin
+                if (buffer_write_done) begin
                     state_next = IDLE;
                 end
             end
@@ -262,13 +262,56 @@ module data_packager #(
     // --- BRAM write ---
     // data_packet_mem is 8K, can store 2048 32-bit words
     // need 11 bits to count all the words
-    logic [10:0] word_counter;
- 
+    
+    logic buffer_full, buffer_empty, buffer_ready;
+    logic [10:0] buffer_write_ptr, buffer_next_write_ptr;
+
+    assign buffer_next_write_ptr = buffer_write_ptr + 11'd4; // bram is byte-addressed
+    // will wrap around automatically
+    
+    assign buffer_full = (buffer_next_write_ptr == i_data_packet_bram_read_ptr);
+    assign buffer_empty = (buffer_write_ptr == i_data_packet_bram_read_ptr);
+    assign buffer_ready = !buffer_full;
+
+    assign o_data_packet_bram_write_ptr = buffer_write_ptr;
+    assign o_data_packet_bram_status_empty = buffer_empty;
+    assign o_data_packet_bram_status_full = buffer_full;
+
+    logic buffer_write_started;
     always_ff @(posedge clk or negedge arst_n) begin
         if (~arst_n) begin
-            word_counter                        <= 11'd4;
-        end else if (in_valid) begin
-            word_counter                    <= word_counter + 11'd4; // will naturally wrap around
+            buffer_write_started            <= 1'b0;
+            buffer_write_done               <= 1'b0;
+        end else if (state_next == WRITING_TO_BUFFER) begin
+            buffer_write_started            <= 1'b1;
+            buffer_write_done               <= 1'b0;
+        end else if (packet_idx == 4'd9) begin
+            buffer_write_started            <= 1'b0;
+            buffer_write_done               <= 1'b1;
+        end else if (state == IDLE) begin
+            buffer_write_started            <= 1'b0;
+            buffer_write_done               <= 1'b0;
+        end
+    end
+
+    logic buffer_write_en;
+    logic [31:0] bram_write_data;
+    logic [3:0] packet_idx;
+    always_ff @(posedge clk or negedge arst_n) begin
+        if (~arst_n) begin
+            buffer_write_en         <= 1'b0;
+            buffer_write_ptr        <= '0;
+            bram_write_data         <= '0;
+            packet_idx              <= '0;
+        end else if (buffer_write_started) begin
+            buffer_write_en         <= 1'b1;
+            buffer_write_ptr        <= buffer_next_write_ptr;
+            bram_write_data         <= packet[(packet_idx*32) +: 32];
+            packet_idx              <= packet_idx + 4'd1;
+        end else begin
+            buffer_write_en         <= 1'b0;
+            bram_write_data         <= '0;
+            packet_idx              <= '0;
         end
     end
     
@@ -278,9 +321,9 @@ module data_packager #(
     bram_writer u_data_packet_mem_writer(
         .clk(clk),
         .arst_n(arst_n),
-        .i_valid(in_valid),
-        .i_data(packet[31:0]),
-        .i_bram_addr({21'd0, word_counter}),
+        .i_valid(buffer_write_en),
+        .i_data(bram_write_data),
+        .i_bram_addr({21'd0, buffer_write_ptr}),
         .o_bram_addr(o_data_packet_bram_addr),
         .o_bram_din(o_data_packet_bram_din),
         .o_bram_we(o_data_packet_bram_we),
