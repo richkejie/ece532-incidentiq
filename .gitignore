@@ -78,3 +78,5 @@ xvlog.*
 ## checkpoint files
 *.dcp
 
+# --- SystemRDL
+systemrdl/gen_html*
