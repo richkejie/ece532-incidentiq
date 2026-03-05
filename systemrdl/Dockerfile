@@ -14,7 +14,8 @@ WORKDIR /workspace
 RUN pip install --no-cache-dir \
     peakrdl \
     peakrdl-regblock \
-    peakrdl-cheader
+    peakrdl-cheader \
+    peakrdl-html
 
 RUN echo 'alias generate="python3 generate_regs.py"' >> ~/.bashrc
 

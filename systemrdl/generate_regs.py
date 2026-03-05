@@ -4,6 +4,7 @@ import subprocess
 RDL_FILE = "src/registers.rdl"
 RTL_OUTPUT_DIR = "gen_rtl"
 C_OUTPUT_DIR = "gen_c"
+HTML_OUTPUT_DIR = "gen_html"
 
 def generate():
     os.makedirs(RTL_OUTPUT_DIR, exist_ok=True)
@@ -16,7 +17,9 @@ def generate():
     subprocess.run([
         "peakrdl", "regblock", RDL_FILE,
         "-o", RTL_OUTPUT_DIR,
-        "--cpuif", "axi4-lite"
+        "--cpuif", "axi4-lite-flat",
+        "--default-reset", "arst_n",
+        "--hwif-report"
     ])
 
     # 2. Generate C Header
@@ -24,6 +27,13 @@ def generate():
     subprocess.run([
         "peakrdl", "c-header", RDL_FILE,
         "-o", f"{C_OUTPUT_DIR}/regs.h"
+    ])
+
+    # 3. Generate HTML Documentation
+    print("Generating HTML Documentation...")
+    subprocess.run([
+        "peakrdl", "html", RDL_FILE,
+        "-o", HTML_OUTPUT_DIR
     ])
 
     print("\nDone!")
