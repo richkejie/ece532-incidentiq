@@ -1,0 +1,83 @@
+
+addrmap registers {
+    name = "Register Map";
+    desc = "All-Purpose Registers";
+
+    default hw = r;       // hardware can read by default
+    default sw = rw;      // software can read/write by default
+
+    // -------------------------------------------------------------------------
+    // Data Packet Buffer Write Pointer Register
+    // Written by custom IP hardware.
+    // Read by MicroBlaze to determine how much data is available.
+    // -------------------------------------------------------------------------
+    reg data_packet_buffer_write_ptr_reg {
+        name = "Write Poitner";
+        desc = "Points to the next location the custom IP will write to.
+                Valid range: 0 to 2047.
+                Written by hardware, read by MicroBlaze.";
+
+        // upper bits unused - buffer depth is 2048 words (11 bits needed)
+        field {} RESERVED[31:11] = 0;
+        field {
+            name = "WPTR";
+            desc = "Write pointer index (word address, 0-2047)";
+            hw = w; // custom IP writes this
+            sw = r; // MicroBlaze can only read it
+        } WPTR[10:0] = 0; // reset to default of 0
+    };
+
+    // -------------------------------------------------------------------------
+    // Data Packet Buffer Read Pointer Register
+    // Written by MicroBlaze after consuming data.
+    // Read by custom IP hardware to determine how much space is available.
+    // -------------------------------------------------------------------------
+    reg data_packet_buffer_read_ptr_reg {
+        name = "Read Pointer";
+        desc = "Points to the next location MicroBlaze will read from.
+                Valid range: 0 to 2047.
+                Written by MicroBlaze, read by hardware.";
+
+        field {} RESERVED[31:11] = 0;
+        field {
+            name    = "RPTR";
+            desc    = "Read pointer index (word address, 0–2047)";
+            hw      = r;    // custom IP reads this
+            sw      = rw;   // MicroBlaze reads and writes this
+        } RPTR[10:0] = 0;
+    };
+
+    // -------------------------------------------------------------------------
+    // Data Packet Buffer Status Register
+    // Purely hardware-driven flags for MicroBlaze to poll.
+    // -------------------------------------------------------------------------
+    reg data_packet_buffer_status_reg {
+        name = "Buffer Status";
+        desc = "Hardware-driven status flags for the circular buffer.";
+
+        field {} RESERVED[31:2] = 0;
+
+        field {
+            name = "FULL";
+            desc = "Set by hardware when buffer is full.
+                    (write_ptr + 1) % 2048 == read_ptr";
+            hw   = w;
+            sw   = r;
+        } FULL[1:1] = 0;
+
+        field {
+            name = "EMPTY";
+            desc = "Set by hardware when buffer is empty.
+                    write_ptr == read_ptr";
+            hw   = w;
+            sw   = r;
+        } EMPTY[0:0] = 1;  // default to empty on reset
+    };
+
+    // -------------------------------------------------------------------------
+    // Address layout
+    // -------------------------------------------------------------------------
+    data_packet_buffer_write_ptr_reg  WRITE_PTR @ 0x00;
+    data_packet_buffer_read_ptr_reg   READ_PTR  @ 0x04;
+    data_packet_buffer_status_reg     STATUS    @ 0x08;
+};
