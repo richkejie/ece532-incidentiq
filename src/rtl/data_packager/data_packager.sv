@@ -28,7 +28,7 @@ module data_packager #(
     output  logic           o_data_recv,
     
     // output packet
-    output  logic [10*32-1:0:0]     o_packet,
+    output  logic [10*32-1:0]       o_packet,
     output  logic                   o_packet_valid,
     
     // interface to BRAM buffer
@@ -51,12 +51,15 @@ module data_packager #(
     logic accel_done_sampling, gyro_done_sampling, gps_done_sampling;
     logic all_sensors_done_sampling = accel_done_sampling & gyro_done_sampling & gps_done_sampling;
 
+    logic bram_buffer_write_done;
+
     // --- FSM ---
-    typedef enum logic [1:0] {
-        IDLE                = 2'b00,
-        START_SAMPLING      = 2'b01,
-        SAMPLING            = 2'b10,
-        DONE                = 2'b11
+    typedef enum logic [2:0] {
+        IDLE                = 3'b000,
+        START_SAMPLING      = 3'b001,
+        SAMPLING            = 3'b010,
+        DONE                = 3'b011,
+        WRITING_TO_BUFFER   = 3'b100
     } data_packager_state_t;
     
     data_packager_state_t state, state_next;
@@ -88,7 +91,13 @@ module data_packager #(
                 end
             end
             DONE: begin
-                state_next = IDLE;
+                state_next = WRITING_TO_BUFFER;
+            end
+            WRITING_TO_BUFFER: begin
+                state_next = WRITING_TO_BUFFER;
+                if (bram_buffer_write_done) begin
+                    state_next = IDLE;
+                end
             end
             default: state_next = IDLE;
         endcase
