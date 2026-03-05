@@ -7,7 +7,7 @@ module registers (
 
         output logic s_axil_awready,
         input wire s_axil_awvalid,
-        input wire [3:0] s_axil_awaddr,
+        input wire [4:0] s_axil_awaddr,
         input wire [2:0] s_axil_awprot,
         output logic s_axil_wready,
         input wire s_axil_wvalid,
@@ -18,7 +18,7 @@ module registers (
         output logic [1:0] s_axil_bresp,
         output logic s_axil_arready,
         input wire s_axil_arvalid,
-        input wire [3:0] s_axil_araddr,
+        input wire [4:0] s_axil_araddr,
         input wire [2:0] s_axil_arprot,
         input wire s_axil_rready,
         output logic s_axil_rvalid,
@@ -34,7 +34,7 @@ module registers (
     //--------------------------------------------------------------------------
     logic cpuif_req;
     logic cpuif_req_is_wr;
-    logic [3:0] cpuif_addr;
+    logic [4:0] cpuif_addr;
     logic [31:0] cpuif_wr_data;
     logic [31:0] cpuif_wr_biten;
     logic cpuif_req_stall_wr;
@@ -51,10 +51,10 @@ module registers (
     logic [1:0] axil_n_in_flight;
     logic axil_prev_was_rd;
     logic axil_arvalid;
-    logic [3:0] axil_araddr;
+    logic [4:0] axil_araddr;
     logic axil_ar_accept;
     logic axil_awvalid;
-    logic [3:0] axil_awaddr;
+    logic [4:0] axil_awaddr;
     logic axil_wvalid;
     logic [31:0] axil_wdata;
     logic [3:0] axil_wstrb;
@@ -132,17 +132,17 @@ module registers (
             if(axil_arvalid && !axil_prev_was_rd) begin
                 cpuif_req = '1;
                 cpuif_req_is_wr = '0;
-                cpuif_addr = {axil_araddr[3:2], 2'b0};
+                cpuif_addr = {axil_araddr[4:2], 2'b0};
                 if(!cpuif_req_stall_rd) axil_ar_accept = '1;
             end else if(axil_awvalid && axil_wvalid) begin
                 cpuif_req = '1;
                 cpuif_req_is_wr = '1;
-                cpuif_addr = {axil_awaddr[3:2], 2'b0};
+                cpuif_addr = {axil_awaddr[4:2], 2'b0};
                 if(!cpuif_req_stall_wr) axil_aw_accept = '1;
             end else if(axil_arvalid) begin
                 cpuif_req = '1;
                 cpuif_req_is_wr = '0;
-                cpuif_addr = {axil_araddr[3:2], 2'b0};
+                cpuif_addr = {axil_araddr[4:2], 2'b0};
                 if(!cpuif_req_stall_rd) axil_ar_accept = '1;
             end
         end
@@ -230,6 +230,10 @@ module registers (
         logic WRITE_PTR;
         logic READ_PTR;
         logic STATUS;
+        logic CD_SPEED_THRESH;
+        logic CD_NON_FATAL_ACCEL_THRESH;
+        logic CD_FATAL_ACCEL_THRESH;
+        logic CD_ANGULAR_SPEED_THRESH;
     } decoded_reg_strb_t;
     decoded_reg_strb_t decoded_reg_strb;
     logic decoded_err;
@@ -243,9 +247,13 @@ module registers (
         automatic logic is_invalid_rw;
         is_valid_addr = '1; // No error checking on valid address access
         is_invalid_rw = '0;
-        decoded_reg_strb.WRITE_PTR = cpuif_req_masked & (cpuif_addr == 4'h0);
-        decoded_reg_strb.READ_PTR = cpuif_req_masked & (cpuif_addr == 4'h4);
-        decoded_reg_strb.STATUS = cpuif_req_masked & (cpuif_addr == 4'h8);
+        decoded_reg_strb.WRITE_PTR = cpuif_req_masked & (cpuif_addr == 5'h0);
+        decoded_reg_strb.READ_PTR = cpuif_req_masked & (cpuif_addr == 5'h4);
+        decoded_reg_strb.STATUS = cpuif_req_masked & (cpuif_addr == 5'h8);
+        decoded_reg_strb.CD_SPEED_THRESH = cpuif_req_masked & (cpuif_addr == 5'hc);
+        decoded_reg_strb.CD_NON_FATAL_ACCEL_THRESH = cpuif_req_masked & (cpuif_addr == 5'h10);
+        decoded_reg_strb.CD_FATAL_ACCEL_THRESH = cpuif_req_masked & (cpuif_addr == 5'h14);
+        decoded_reg_strb.CD_ANGULAR_SPEED_THRESH = cpuif_req_masked & (cpuif_addr == 5'h18);
         decoded_err = (~is_valid_addr | is_invalid_rw) & decoded_req;
     end
 
@@ -281,6 +289,30 @@ module registers (
                 logic load_next;
             } RESERVED;
         } STATUS;
+        struct {
+            struct {
+                logic [31:0] next;
+                logic load_next;
+            } THRESH;
+        } CD_SPEED_THRESH;
+        struct {
+            struct {
+                logic [31:0] next;
+                logic load_next;
+            } THRESH;
+        } CD_NON_FATAL_ACCEL_THRESH;
+        struct {
+            struct {
+                logic [31:0] next;
+                logic load_next;
+            } THRESH;
+        } CD_FATAL_ACCEL_THRESH;
+        struct {
+            struct {
+                logic [31:0] next;
+                logic load_next;
+            } THRESH;
+        } CD_ANGULAR_SPEED_THRESH;
     } field_combo_t;
     field_combo_t field_combo;
 
@@ -303,6 +335,26 @@ module registers (
                 logic [29:0] value;
             } RESERVED;
         } STATUS;
+        struct {
+            struct {
+                logic [31:0] value;
+            } THRESH;
+        } CD_SPEED_THRESH;
+        struct {
+            struct {
+                logic [31:0] value;
+            } THRESH;
+        } CD_NON_FATAL_ACCEL_THRESH;
+        struct {
+            struct {
+                logic [31:0] value;
+            } THRESH;
+        } CD_FATAL_ACCEL_THRESH;
+        struct {
+            struct {
+                logic [31:0] value;
+            } THRESH;
+        } CD_ANGULAR_SPEED_THRESH;
     } field_storage_t;
     field_storage_t field_storage;
 
@@ -398,6 +450,98 @@ module registers (
         end
     end
     assign hwif_out.STATUS.RESERVED.value = field_storage.STATUS.RESERVED.value;
+    // Field: registers.CD_SPEED_THRESH.THRESH
+    always_comb begin
+        automatic logic [31:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.CD_SPEED_THRESH.THRESH.value;
+        load_next_c = '0;
+        if(decoded_reg_strb.CD_SPEED_THRESH && decoded_req_is_wr) begin // SW write
+            next_c = (field_storage.CD_SPEED_THRESH.THRESH.value & ~decoded_wr_biten[31:0]) | (decoded_wr_data[31:0] & decoded_wr_biten[31:0]);
+            load_next_c = '1;
+        end
+        field_combo.CD_SPEED_THRESH.THRESH.next = next_c;
+        field_combo.CD_SPEED_THRESH.THRESH.load_next = load_next_c;
+    end
+    always_ff @(posedge clk or negedge arst_n) begin
+        if(~arst_n) begin
+            field_storage.CD_SPEED_THRESH.THRESH.value <= 32'h0;
+        end else begin
+            if(field_combo.CD_SPEED_THRESH.THRESH.load_next) begin
+                field_storage.CD_SPEED_THRESH.THRESH.value <= field_combo.CD_SPEED_THRESH.THRESH.next;
+            end
+        end
+    end
+    assign hwif_out.CD_SPEED_THRESH.THRESH.value = field_storage.CD_SPEED_THRESH.THRESH.value;
+    // Field: registers.CD_NON_FATAL_ACCEL_THRESH.THRESH
+    always_comb begin
+        automatic logic [31:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.CD_NON_FATAL_ACCEL_THRESH.THRESH.value;
+        load_next_c = '0;
+        if(decoded_reg_strb.CD_NON_FATAL_ACCEL_THRESH && decoded_req_is_wr) begin // SW write
+            next_c = (field_storage.CD_NON_FATAL_ACCEL_THRESH.THRESH.value & ~decoded_wr_biten[31:0]) | (decoded_wr_data[31:0] & decoded_wr_biten[31:0]);
+            load_next_c = '1;
+        end
+        field_combo.CD_NON_FATAL_ACCEL_THRESH.THRESH.next = next_c;
+        field_combo.CD_NON_FATAL_ACCEL_THRESH.THRESH.load_next = load_next_c;
+    end
+    always_ff @(posedge clk or negedge arst_n) begin
+        if(~arst_n) begin
+            field_storage.CD_NON_FATAL_ACCEL_THRESH.THRESH.value <= 32'h7d;
+        end else begin
+            if(field_combo.CD_NON_FATAL_ACCEL_THRESH.THRESH.load_next) begin
+                field_storage.CD_NON_FATAL_ACCEL_THRESH.THRESH.value <= field_combo.CD_NON_FATAL_ACCEL_THRESH.THRESH.next;
+            end
+        end
+    end
+    assign hwif_out.CD_NON_FATAL_ACCEL_THRESH.THRESH.value = field_storage.CD_NON_FATAL_ACCEL_THRESH.THRESH.value;
+    // Field: registers.CD_FATAL_ACCEL_THRESH.THRESH
+    always_comb begin
+        automatic logic [31:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.CD_FATAL_ACCEL_THRESH.THRESH.value;
+        load_next_c = '0;
+        if(decoded_reg_strb.CD_FATAL_ACCEL_THRESH && decoded_req_is_wr) begin // SW write
+            next_c = (field_storage.CD_FATAL_ACCEL_THRESH.THRESH.value & ~decoded_wr_biten[31:0]) | (decoded_wr_data[31:0] & decoded_wr_biten[31:0]);
+            load_next_c = '1;
+        end
+        field_combo.CD_FATAL_ACCEL_THRESH.THRESH.next = next_c;
+        field_combo.CD_FATAL_ACCEL_THRESH.THRESH.load_next = load_next_c;
+    end
+    always_ff @(posedge clk or negedge arst_n) begin
+        if(~arst_n) begin
+            field_storage.CD_FATAL_ACCEL_THRESH.THRESH.value <= 32'h7d;
+        end else begin
+            if(field_combo.CD_FATAL_ACCEL_THRESH.THRESH.load_next) begin
+                field_storage.CD_FATAL_ACCEL_THRESH.THRESH.value <= field_combo.CD_FATAL_ACCEL_THRESH.THRESH.next;
+            end
+        end
+    end
+    assign hwif_out.CD_FATAL_ACCEL_THRESH.THRESH.value = field_storage.CD_FATAL_ACCEL_THRESH.THRESH.value;
+    // Field: registers.CD_ANGULAR_SPEED_THRESH.THRESH
+    always_comb begin
+        automatic logic [31:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.CD_ANGULAR_SPEED_THRESH.THRESH.value;
+        load_next_c = '0;
+        if(decoded_reg_strb.CD_ANGULAR_SPEED_THRESH && decoded_req_is_wr) begin // SW write
+            next_c = (field_storage.CD_ANGULAR_SPEED_THRESH.THRESH.value & ~decoded_wr_biten[31:0]) | (decoded_wr_data[31:0] & decoded_wr_biten[31:0]);
+            load_next_c = '1;
+        end
+        field_combo.CD_ANGULAR_SPEED_THRESH.THRESH.next = next_c;
+        field_combo.CD_ANGULAR_SPEED_THRESH.THRESH.load_next = load_next_c;
+    end
+    always_ff @(posedge clk or negedge arst_n) begin
+        if(~arst_n) begin
+            field_storage.CD_ANGULAR_SPEED_THRESH.THRESH.value <= 32'h1f40;
+        end else begin
+            if(field_combo.CD_ANGULAR_SPEED_THRESH.THRESH.load_next) begin
+                field_storage.CD_ANGULAR_SPEED_THRESH.THRESH.value <= field_combo.CD_ANGULAR_SPEED_THRESH.THRESH.next;
+            end
+        end
+    end
+    assign hwif_out.CD_ANGULAR_SPEED_THRESH.THRESH.value = field_storage.CD_ANGULAR_SPEED_THRESH.THRESH.value;
 
     //--------------------------------------------------------------------------
     // Write response
@@ -415,7 +559,7 @@ module registers (
     logic [31:0] readback_data;
 
     // Assign readback values to a flattened array
-    logic [31:0] readback_array[3];
+    logic [31:0] readback_array[7];
     assign readback_array[0][10:0] = (decoded_reg_strb.WRITE_PTR && !decoded_req_is_wr) ? hwif_in.WRITE_PTR.WPTR.next : '0;
     assign readback_array[0][31:11] = (decoded_reg_strb.WRITE_PTR && !decoded_req_is_wr) ? field_storage.WRITE_PTR.RESERVED.value : '0;
     assign readback_array[1][10:0] = (decoded_reg_strb.READ_PTR && !decoded_req_is_wr) ? field_storage.READ_PTR.RPTR.value : '0;
@@ -423,6 +567,10 @@ module registers (
     assign readback_array[2][0:0] = (decoded_reg_strb.STATUS && !decoded_req_is_wr) ? hwif_in.STATUS.EMPTY.next : '0;
     assign readback_array[2][1:1] = (decoded_reg_strb.STATUS && !decoded_req_is_wr) ? hwif_in.STATUS.FULL.next : '0;
     assign readback_array[2][31:2] = (decoded_reg_strb.STATUS && !decoded_req_is_wr) ? field_storage.STATUS.RESERVED.value : '0;
+    assign readback_array[3][31:0] = (decoded_reg_strb.CD_SPEED_THRESH && !decoded_req_is_wr) ? field_storage.CD_SPEED_THRESH.THRESH.value : '0;
+    assign readback_array[4][31:0] = (decoded_reg_strb.CD_NON_FATAL_ACCEL_THRESH && !decoded_req_is_wr) ? field_storage.CD_NON_FATAL_ACCEL_THRESH.THRESH.value : '0;
+    assign readback_array[5][31:0] = (decoded_reg_strb.CD_FATAL_ACCEL_THRESH && !decoded_req_is_wr) ? field_storage.CD_FATAL_ACCEL_THRESH.THRESH.value : '0;
+    assign readback_array[6][31:0] = (decoded_reg_strb.CD_ANGULAR_SPEED_THRESH && !decoded_req_is_wr) ? field_storage.CD_ANGULAR_SPEED_THRESH.THRESH.value : '0;
 
     // Reduce the array
     always_comb begin
@@ -430,7 +578,7 @@ module registers (
         readback_done = decoded_req & ~decoded_req_is_wr;
         readback_err = '0;
         readback_data_var = '0;
-        for(int i=0; i<3; i++) readback_data_var |= readback_array[i];
+        for(int i=0; i<7; i++) readback_data_var |= readback_array[i];
         readback_data = readback_data_var;
     end
 

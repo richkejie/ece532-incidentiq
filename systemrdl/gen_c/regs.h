@@ -45,15 +45,43 @@ extern "C" {
 #define REGISTERS__DATA_PACKET_BUFFER_STATUS_REG__RESERVED_bw 30
 #define REGISTERS__DATA_PACKET_BUFFER_STATUS_REG__RESERVED_reset 0x0
 
+// Reg - registers::crash_detection_speed_threshold_reg
+#define REGISTERS__CRASH_DETECTION_SPEED_THRESHOLD_REG__THRESH_bm 0xffffffff
+#define REGISTERS__CRASH_DETECTION_SPEED_THRESHOLD_REG__THRESH_bp 0
+#define REGISTERS__CRASH_DETECTION_SPEED_THRESHOLD_REG__THRESH_bw 32
+#define REGISTERS__CRASH_DETECTION_SPEED_THRESHOLD_REG__THRESH_reset 0x0
+
+// Reg - registers::crash_detection_non_fatal_accel_threshold_reg
+#define REGISTERS__CRASH_DETECTION_NON_FATAL_ACCEL_THRESHOLD_REG__THRESH_bm 0xffffffff
+#define REGISTERS__CRASH_DETECTION_NON_FATAL_ACCEL_THRESHOLD_REG__THRESH_bp 0
+#define REGISTERS__CRASH_DETECTION_NON_FATAL_ACCEL_THRESHOLD_REG__THRESH_bw 32
+#define REGISTERS__CRASH_DETECTION_NON_FATAL_ACCEL_THRESHOLD_REG__THRESH_reset 0x7d
+
+// Reg - registers::crash_detection_fatal_accel_threshold_reg
+#define REGISTERS__CRASH_DETECTION_FATAL_ACCEL_THRESHOLD_REG__THRESH_bm 0xffffffff
+#define REGISTERS__CRASH_DETECTION_FATAL_ACCEL_THRESHOLD_REG__THRESH_bp 0
+#define REGISTERS__CRASH_DETECTION_FATAL_ACCEL_THRESHOLD_REG__THRESH_bw 32
+#define REGISTERS__CRASH_DETECTION_FATAL_ACCEL_THRESHOLD_REG__THRESH_reset 0x7d
+
+// Reg - registers::crash_detection_angular_speed_threshold_reg
+#define REGISTERS__CRASH_DETECTION_ANGULAR_SPEED_THRESHOLD_REG__THRESH_bm 0xffffffff
+#define REGISTERS__CRASH_DETECTION_ANGULAR_SPEED_THRESHOLD_REG__THRESH_bp 0
+#define REGISTERS__CRASH_DETECTION_ANGULAR_SPEED_THRESHOLD_REG__THRESH_bw 32
+#define REGISTERS__CRASH_DETECTION_ANGULAR_SPEED_THRESHOLD_REG__THRESH_reset 0x1f40
+
 // Addrmap - registers
 typedef struct __attribute__ ((__packed__)) {
     uint32_t WRITE_PTR;
     uint32_t READ_PTR;
     uint32_t STATUS;
+    uint32_t CD_SPEED_THRESH;
+    uint32_t CD_NON_FATAL_ACCEL_THRESH;
+    uint32_t CD_FATAL_ACCEL_THRESH;
+    uint32_t CD_ANGULAR_SPEED_THRESH;
 } registers_t;
 
 
-static_assert(sizeof(registers_t) == 0xc, "Packing error");
+static_assert(sizeof(registers_t) == 0x1c, "Packing error");
 
 #ifdef __cplusplus
 }

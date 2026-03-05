@@ -6,6 +6,7 @@ addrmap registers {
     default hw = r;       // hardware can read by default
     default sw = rw;      // software can read/write by default
 
+    /* ------------------ Data Packet Buffer ------------------ */
     // -------------------------------------------------------------------------
     // Data Packet Buffer Write Pointer Register
     // Written by custom IP hardware.
@@ -74,10 +75,88 @@ addrmap registers {
         } EMPTY[0:0] = 1;  // default to empty on reset
     };
 
+    /* ------------------ Crash Detection Thresholds ------------------ */
+    // -------------------------------------------------------------------------
+    // Crash Detection Speed Threshold Register
+    // Determines whether to classify crash as fatal or non-fatal.
+    // -------------------------------------------------------------------------
+    reg crash_detection_speed_threshold_reg {
+        name = "Crash Detection Speed Threshold";
+        desc = "Determines whether to classify crash as fatal or non-fatal.";
+
+        field {
+            name = "THRESH";
+            desc = "Speed threshold. Units of knots
+                    above threshold: fatal
+                    below threshold: non-fatal";
+            hw   = r;
+            sw   = rw;
+        } THRESH[31:0] = 0;
+    };
+
+    // -------------------------------------------------------------------------
+    // Crash Detection Non-Fatal Acceleration Threshold Register
+    // Determines non-fatal crash acceleration limit.
+    // -------------------------------------------------------------------------
+    reg crash_detection_non_fatal_accel_threshold_reg {
+        name = "Crash Detection Non Fatal Acceleration Threshold";
+        desc = "Determines non-fatal crash acceleration limit.";
+
+        field {
+            name = "THRESH";
+            desc = "Non fatal crash acceleration threshold.
+                    units of micro Gs, 
+                    default is ~0.5G (range: +- 8G, 12 bit signed)";
+            hw   = r;
+            sw   = rw;
+        } THRESH[31:0] = 32'd125; // units of micro Gs, ~0.5G (range: +- 8G, 12 bit signed)
+    };
+
+    // -------------------------------------------------------------------------
+    // Crash Detection Fatal Acceleration Threshold Register
+    // Determines fatal crash acceleration limit.
+    // -------------------------------------------------------------------------
+    reg crash_detection_fatal_accel_threshold_reg {
+        name = "Crash Detection Fatal Acceleration Threshold";
+        desc = "Determines fatal crash acceleration limit.";
+
+        field {
+            name = "THRESH";
+            desc = "Fatal crash acceleration threshold.
+                    units of micro Gs, 
+                    default is ~0.5G (range: +- 8G, 12 bit signed)";
+            hw   = r;
+            sw   = rw;
+        } THRESH[31:0] = 32'd125; // units of micro Gs, ~0.5G (range: +- 8G, 12 bit signed)
+    };
+
+    // -------------------------------------------------------------------------
+    // Crash Detection Angular Speed Threshold Register
+    // Determines crashing angular speed limit.
+    // -------------------------------------------------------------------------
+    reg crash_detection_angular_speed_threshold_reg {
+        name = "Crash Detection Angular Speed Threshold";
+        desc = "Determines crashing angular speed limit.";
+
+        field {
+            name = "THRESH";
+            desc = "Crashing angular speed limit.
+                    units of degrees per second, 
+                    default is ~60dps (range: +- 250dps, 16bit signed)";
+            hw   = r;
+            sw   = rw;
+        } THRESH[31:0] = 32'd8000; // units of degrees per second, ~60dps (range: +- 250dps, 16bit signed)
+    };
+
     // -------------------------------------------------------------------------
     // Address layout
     // -------------------------------------------------------------------------
-    data_packet_buffer_write_ptr_reg  WRITE_PTR @ 0x00;
-    data_packet_buffer_read_ptr_reg   READ_PTR  @ 0x04;
-    data_packet_buffer_status_reg     STATUS    @ 0x08;
+    data_packet_buffer_write_ptr_reg                WRITE_PTR @ 0x00;
+    data_packet_buffer_read_ptr_reg                 READ_PTR  @ 0x04;
+    data_packet_buffer_status_reg                   STATUS    @ 0x08;
+
+    crash_detection_speed_threshold_reg             CD_SPEED_THRESH @ 0x0C;
+    crash_detection_non_fatal_accel_threshold_reg   CD_NON_FATAL_ACCEL_THRESH @ 0x10;
+    crash_detection_fatal_accel_threshold_reg       CD_FATAL_ACCEL_THRESH @ 0x14;
+    crash_detection_angular_speed_threshold_reg     CD_ANGULAR_SPEED_THRESH @ 0x18;
 };

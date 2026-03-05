@@ -4,7 +4,7 @@ module top(
     input   logic           CLK,        // board clock crystal (100 MHZ?)
     input   logic           ARESET_N,    // reset button (async active low)
     
-    input  wire BTNC,       // button for your FSM1/FSM2 reset behavior (PollingModule
+    input  wire BTNC,       // button for your FSM1/FSM2 reset behavior (PollingModule)
     
     // SPI0 physical pins (on-board accelerometer)
     input  wire MISO_0,
@@ -235,12 +235,10 @@ module top(
         .i_gyro_y           (w_gyro_y),
         .i_gyro_x           (w_gyro_x),
         
-        .ireg_speed_threshold                   (),
-        .ireg_non_fatal_accel_threshold         (),
-        .ireg_fatal_accel_threshold             (),
-        .ireg_angle_threshold                   (),
-        .ireg_angle_in_motion_threshold         (),
-        .ireg_angular_speed_threshold           (),
+        .ireg_speed_threshold                   (whwif_out.CD_SPEED_THRESH.THRESH.value),
+        .ireg_non_fatal_accel_threshold         (whwif_out.CD_NON_FATAL_ACCEL_THRESH.THRESH.value),
+        .ireg_fatal_accel_threshold             (whwif_out.CD_FATAL_ACCEL_THRESH.THRESH.value),
+        .ireg_angular_speed_threshold           (whwif_out.CD_ANGULAR_SPEED.THRESH.value),
         
         .o_state            (w_cd_state),
         .o_non_fatal_intr   (w_non_fatal_crash_led),

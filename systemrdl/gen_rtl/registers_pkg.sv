@@ -4,8 +4,8 @@
 package registers_pkg;
 
     localparam REGISTERS_DATA_WIDTH = 32;
-    localparam REGISTERS_MIN_ADDR_WIDTH = 4;
-    localparam REGISTERS_SIZE = 'hc;
+    localparam REGISTERS_MIN_ADDR_WIDTH = 5;
+    localparam REGISTERS_SIZE = 'h1c;
 
     typedef struct {
         logic [10:0] next;
@@ -63,8 +63,44 @@ package registers_pkg;
     } registers__data_packet_buffer_status_reg__out_t;
 
     typedef struct {
+        logic [31:0] value;
+    } registers__crash_detection_speed_threshold_reg__THRESH__out_t;
+
+    typedef struct {
+        registers__crash_detection_speed_threshold_reg__THRESH__out_t THRESH;
+    } registers__crash_detection_speed_threshold_reg__out_t;
+
+    typedef struct {
+        logic [31:0] value;
+    } registers__crash_detection_non_fatal_accel_threshold_reg__THRESH__out_t;
+
+    typedef struct {
+        registers__crash_detection_non_fatal_accel_threshold_reg__THRESH__out_t THRESH;
+    } registers__crash_detection_non_fatal_accel_threshold_reg__out_t;
+
+    typedef struct {
+        logic [31:0] value;
+    } registers__crash_detection_fatal_accel_threshold_reg__THRESH__out_t;
+
+    typedef struct {
+        registers__crash_detection_fatal_accel_threshold_reg__THRESH__out_t THRESH;
+    } registers__crash_detection_fatal_accel_threshold_reg__out_t;
+
+    typedef struct {
+        logic [31:0] value;
+    } registers__crash_detection_angular_speed_threshold_reg__THRESH__out_t;
+
+    typedef struct {
+        registers__crash_detection_angular_speed_threshold_reg__THRESH__out_t THRESH;
+    } registers__crash_detection_angular_speed_threshold_reg__out_t;
+
+    typedef struct {
         registers__data_packet_buffer_write_ptr_reg__out_t WRITE_PTR;
         registers__data_packet_buffer_read_ptr_reg__out_t READ_PTR;
         registers__data_packet_buffer_status_reg__out_t STATUS;
+        registers__crash_detection_speed_threshold_reg__out_t CD_SPEED_THRESH;
+        registers__crash_detection_non_fatal_accel_threshold_reg__out_t CD_NON_FATAL_ACCEL_THRESH;
+        registers__crash_detection_fatal_accel_threshold_reg__out_t CD_FATAL_ACCEL_THRESH;
+        registers__crash_detection_angular_speed_threshold_reg__out_t CD_ANGULAR_SPEED_THRESH;
     } registers__out_t;
 endpackage

@@ -24,8 +24,6 @@ module crash_detection #(
         input   logic [31:0]    ireg_speed_threshold,
         input   logic [31:0]    ireg_non_fatal_accel_threshold,
         input   logic [31:0]    ireg_fatal_accel_threshold,
-        input   logic [31:0]    ireg_angle_threshold,
-        input   logic [31:0]    ireg_angle_in_motion_threshold,
         input   logic [31:0]    ireg_angular_speed_threshold,
         
         output  logic [1:0]     o_state,
@@ -136,12 +134,12 @@ module crash_detection #(
                 crash_state_next = SAFE;
                 if ((avg_speed >= ireg_speed_threshold) && (
                     (avg_accel > ireg_fatal_accel_threshold) ||
-                    (avg_gyro > ireg_angle_threshold)
+                    (avg_gyro > ireg_angular_speed_threshold)
                 )) begin
                     crash_state_next = FATAL;
                 end else if ((avg_speed < ireg_speed_threshold) && (
                     (avg_accel > ireg_non_fatal_accel_threshold) ||
-                    (avg_gyro > ireg_angle_threshold)
+                    (avg_gyro > ireg_angular_speed_threshold)
                 )) begin
                     crash_state_next = NON_FATAL;
                 end
